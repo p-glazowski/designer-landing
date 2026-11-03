@@ -1,49 +1,154 @@
-import { useEffect, useRef } from 'react'
-import { SmearPhoto, type SmearHandle } from './SmearPhoto'
+import { useEffect, useRef, useState } from 'react'
+import { HeroSmear } from '../lib/heroSmear'
 import { prefersReducedMotion } from '../lib/smear'
 import { brand } from '../content'
 
-const doors = [
+const rooms = [
+  {
+    href: '#komercyjne',
+    name: 'Wnętrza komercyjne',
+    line: 'Hotele, biura, restauracje',
+    src: 'hero-commercial',
+    alt: 'Lobby z trawertynowymi ścianami, sufitem z drewnianych lameli i recepcją z ciemnego marmuru',
+  },
   {
     href: '#prywatne',
     name: 'Wnętrza prywatne',
     line: 'Domy, apartamenty, łazienki',
-    src: 'door-private',
-    w: 1000,
-    h: 1500,
-    alt: 'Łazienka wyłożona trawertynem, czarna armatura i podświetlana wnęka',
-  },
-  {
-    href: '#komercyjne',
-    name: 'Wnętrza komercyjne',
-    line: 'Restauracje, hotele, butiki',
-    src: 'door-commercial',
-    w: 1000,
-    h: 670,
-    alt: 'Restauracja wieczorem, drewniane stoły i lampy z bursztynowymi kloszami',
+    src: 'hero-private',
+    alt: 'Łazienka z czarnym marmurem, orzechową zabudową i okrągłym podświetlanym lustrem',
   },
 ]
 
+/**
+ * One enormous brushstroke is dragged across the dark, and the room shows only
+ * inside it. Moving across the screen uncovers the room for a moment before it
+ * sinks back into shadow.
+ */
 export function Hero({ introDelay }: { introDelay: number }) {
-  const a = useRef<SmearHandle>(null)
-  const b = useRef<SmearHandle>(null)
+  const rootRef = useRef<HTMLElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const imgRefs = useRef<(HTMLImageElement | null)[]>([])
+  const smear = useRef<HeroSmear | null>(null)
+  const [active, setActive] = useState(0)
 
-  // A first stroke drawn for the visitor, so the idea is seen before it is tried.
   useEffect(() => {
-    if (prefersReducedMotion()) {
-      a.current?.fill()
-      b.current?.fill()
-      return
+    const root = rootRef.current!
+    const canvas = canvasRef.current!
+    const reduced = prefersReducedMotion()
+    const imgs = imgRefs.current.filter(Boolean) as HTMLImageElement[]
+
+    // A trail drawn for the visitor once the stroke is down, so the effect is seen before it is tried.
+    const wisp = () => {
+      const s = smear.current
+      const r = canvas.getBoundingClientRect()
+      if (!s || !r.width) return
+      const t0 = performance.now()
+      const ms = 2200
+      let first = true
+      const step = (now: number) => {
+        const k = Math.min(1, (now - t0) / ms)
+        const x = (0.06 + k * 0.5) * r.width
+        const y = (0.6 - k * 0.3 + Math.sin(k * Math.PI * 2.2) * 0.07) * r.height
+        s.reveal({ x, y }, first)
+        first = false
+        if (k < 1) requestAnimationFrame(step)
+        else s.lift()
+      }
+      requestAnimationFrame(step)
     }
-    const t = window.setTimeout(() => {
-      a.current?.sweep([[0.1, 0.18], [0.85, 0.42], [0.2, 0.66], [0.9, 0.88]], 1300)
-      window.setTimeout(() => b.current?.sweep([[0.88, 0.15], [0.12, 0.4], [0.85, 0.65], [0.15, 0.9]], 1300), 260)
-    }, introDelay)
-    return () => window.clearTimeout(t)
+
+    const s = new HeroSmear(canvas, imgs, { onLaid: reduced ? undefined : wisp })
+    smear.current = s
+
+    let timer = 0
+    const start = () => {
+      if (reduced) s.lay(0)
+      else timer = window.setTimeout(() => s.lay(1500), introDelay)
+    }
+    if (imgs.every((i) => i.complete)) start()
+    else Promise.all(imgs.map((i) => (i.complete ? null : new Promise((r) => i.addEventListener('load', r, { once: true }))))).then(start)
+
+    const at = (e: PointerEvent) => {
+      const r = canvas.getBoundingClientRect()
+      return { x: e.clientX - r.left, y: e.clientY - r.top }
+    }
+
+    // The reveal goes quiet around small clickable text, so it stays readable when it's wanted.
+    let zones: DOMRect[] | null = null
+    let quiet = false
+    const measure = () => {
+      const c = canvas.getBoundingClientRect()
+      zones = [...root.querySelectorAll('.nav, .hero-rooms')].map((el) => {
+        const r = el.getBoundingClientRect()
+        return new DOMRect(r.left - c.left, r.top - c.top, r.width, r.height)
+      })
+      return zones
+    }
+    const strengthAt = (p: { x: number; y: number }) => {
+      const nearest = Math.min(
+        ...(zones ?? measure()).map((z) => Math.hypot(Math.max(z.left - p.x, 0, p.x - z.right), Math.max(z.top - p.y, 0, p.y - z.bottom))),
+      )
+      const t = Math.min(Math.max((nearest - 24) / (160 - 24), 0), 1)
+      return t * t * (3 - 2 * t)
+    }
+    const paint = (e: PointerEvent, fresh: boolean) => {
+      const p = at(e)
+      const strength = strengthAt(p)
+      if (strength <= 0 && !quiet) s.hush()
+      quiet = strength <= 0
+      s.reveal(p, fresh, strength)
+    }
+    const enter = (e: PointerEvent) => {
+      measure()
+      paint(e, true)
+    }
+    const move = (e: PointerEvent) => paint(e, false)
+    const leave = () => s.lift()
+    const remeasure = () => {
+      zones = null
+    }
+    if (!reduced) {
+      root.addEventListener('pointerenter', enter)
+      root.addEventListener('pointermove', move)
+      root.addEventListener('pointerleave', leave)
+      window.addEventListener('resize', remeasure)
+    }
+    return () => {
+      window.clearTimeout(timer)
+      s.destroy()
+      window.removeEventListener('resize', remeasure)
+      root.removeEventListener('pointerenter', enter)
+      root.removeEventListener('pointermove', move)
+      root.removeEventListener('pointerleave', leave)
+    }
   }, [introDelay])
 
+  const choose = (i: number) => {
+    setActive(i)
+    smear.current?.show(i)
+  }
+
   return (
-    <header className="hero" id="top">
+    <header className="hero" id="top" ref={rootRef}>
+      <div className="hero-stage">
+        {rooms.map((r, i) => (
+          <img
+            key={r.src}
+            ref={(el) => {
+              imgRefs.current[i] = el
+            }}
+            className={active === i ? 'is-active' : ''}
+            src={`/media/${r.src}.jpg`}
+            alt={active === i ? r.alt : ''}
+            width={2400}
+            height={1500}
+            fetchPriority={i === 0 ? 'high' : 'auto'}
+          />
+        ))}
+        <canvas ref={canvasRef} aria-hidden="true" />
+      </div>
+
       <nav className="nav" aria-label="Główna">
         <a className="wordmark" href="#top" aria-label={`${brand}, na początek strony`}>
           {brand}
@@ -58,25 +163,29 @@ export function Hero({ introDelay }: { introDelay: number }) {
         </div>
       </nav>
 
-      <div className="hero-head" data-reveal>
+      <div className="hero-copy" data-reveal>
         <h1 data-part>
           Wnętrza, które
           <br />
           zostawiają ślad.
         </h1>
-        <p className="hero-sub" data-part>
-          Studio projektowania wnętrz prywatnych i komercyjnych. Prowadzimy projekty od koncepcji po realizację.
-        </p>
-      </div>
-
-      <div className="doors">
-        {doors.map((d, i) => (
-          <a className="door" href={d.href} key={d.href}>
-            <SmearPhoto ref={i === 0 ? a : b} src={d.src} alt={d.alt} width={d.w} height={d.h} eager brush={0.42} />
-            <span className="door-name">{d.name}</span>
-            <span className="door-line">{d.line}</span>
-          </a>
-        ))}
+        <div className="hero-aside" data-part>
+          <ul className="hero-rooms">
+            {rooms.map((r, i) => (
+              <li key={r.href}>
+                <a
+                  href={r.href}
+                  className={active === i ? 'is-active' : ''}
+                  onPointerEnter={() => choose(i)}
+                  onFocus={() => choose(i)}
+                >
+                  <span className="room-name">{r.name}</span>
+                  <span className="room-line">{r.line}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </header>
   )
