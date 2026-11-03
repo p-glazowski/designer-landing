@@ -42,6 +42,7 @@ export class HeroSmear {
   private visible = true
   private last: Pt | null = null
   private lastMove = 0
+  private trailLive = false
   private laidTo = 0
   private laying: { start: number; ms: number } | null = null
   private fade = { from: -1, to: 0, start: 0 }
@@ -240,6 +241,7 @@ export class HeroSmear {
     }
     this.last = p
     this.lastMove = performance.now()
+    this.trailLive = true
     this.wake()
   }
 
@@ -265,15 +267,22 @@ export class HeroSmear {
     }
 
     // Where the cursor has passed, the room sinks back into shadow, in place.
-    if (now - this.lastMove < 4000) {
+    // A fractional fade stalls at faint 8-bit values, so once it has run its
+    // course the trail is cleared outright and leaves nothing behind.
+    if (this.trailLive) {
       const x = this.trail.x
-      x.globalCompositeOperation = 'destination-out'
-      x.globalAlpha = 0.03
-      x.fillStyle = '#000'
-      x.fillRect(0, 0, this.w, this.h)
-      x.globalAlpha = 1
-      x.globalCompositeOperation = 'source-over'
-      busy = true
+      if (now - this.lastMove < 3000) {
+        x.globalCompositeOperation = 'destination-out'
+        x.globalAlpha = 0.04
+        x.fillStyle = '#000'
+        x.fillRect(0, 0, this.w, this.h)
+        x.globalAlpha = 1
+        x.globalCompositeOperation = 'source-over'
+        busy = true
+      } else {
+        x.clearRect(0, 0, this.w, this.h)
+        this.trailLive = false
+      }
     }
 
     const f = this.fade.from >= 0 ? (now - this.fade.start) / 700 : 1
