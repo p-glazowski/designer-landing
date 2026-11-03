@@ -245,11 +245,11 @@ button {
 
 .nav-links a:not(.button) {
   text-decoration: none;
-  color: var(--muted);
+  color: var(--ink);
 }
 
 .nav-links a:not(.button):hover {
-  color: var(--ink);
+  text-decoration: underline;
 }
 
 .hero-copy {

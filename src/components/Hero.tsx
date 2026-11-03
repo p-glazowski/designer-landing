@@ -73,17 +73,51 @@ export function Hero({ introDelay }: { introDelay: number }) {
       const r = canvas.getBoundingClientRect()
       return { x: e.clientX - r.left, y: e.clientY - r.top }
     }
-    const enter = (e: PointerEvent) => s.reveal(at(e), true)
-    const move = (e: PointerEvent) => s.reveal(at(e))
+
+    // The reveal goes quiet around small clickable text, so it stays readable when it's wanted.
+    let zones: DOMRect[] | null = null
+    let quiet = false
+    const measure = () => {
+      const c = canvas.getBoundingClientRect()
+      zones = [...root.querySelectorAll('.nav, .hero-rooms')].map((el) => {
+        const r = el.getBoundingClientRect()
+        return new DOMRect(r.left - c.left, r.top - c.top, r.width, r.height)
+      })
+      return zones
+    }
+    const strengthAt = (p: { x: number; y: number }) => {
+      const nearest = Math.min(
+        ...(zones ?? measure()).map((z) => Math.hypot(Math.max(z.left - p.x, 0, p.x - z.right), Math.max(z.top - p.y, 0, p.y - z.bottom))),
+      )
+      const t = Math.min(Math.max((nearest - 24) / (160 - 24), 0), 1)
+      return t * t * (3 - 2 * t)
+    }
+    const paint = (e: PointerEvent, fresh: boolean) => {
+      const p = at(e)
+      const strength = strengthAt(p)
+      if (strength <= 0 && !quiet) s.hush()
+      quiet = strength <= 0
+      s.reveal(p, fresh, strength)
+    }
+    const enter = (e: PointerEvent) => {
+      measure()
+      paint(e, true)
+    }
+    const move = (e: PointerEvent) => paint(e, false)
     const leave = () => s.lift()
+    const remeasure = () => {
+      zones = null
+    }
     if (!reduced) {
       root.addEventListener('pointerenter', enter)
       root.addEventListener('pointermove', move)
       root.addEventListener('pointerleave', leave)
+      window.addEventListener('resize', remeasure)
     }
     return () => {
       window.clearTimeout(timer)
       s.destroy()
+      window.removeEventListener('resize', remeasure)
       root.removeEventListener('pointerenter', enter)
       root.removeEventListener('pointermove', move)
       root.removeEventListener('pointerleave', leave)

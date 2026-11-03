@@ -41,7 +41,8 @@ export class HeroSmear {
   private io: IntersectionObserver
   private visible = true
   private last: Pt | null = null
-  private lastMove = 0
+  private fadeUntil = 0
+  private fadeStep = 0.04
   private trailLive = false
   private laidTo = 0
   private laying: { start: number; ms: number } | null = null
@@ -72,7 +73,7 @@ export class HeroSmear {
     const y =
       this.h > this.w
         ? 0.44 - u * 0.28 + Math.sin(u * Math.PI * 1.1 + 0.2) * 0.04 + Math.sin(u * Math.PI * 3.1) * 0.008
-        : 0.42 - u * 0.2 + Math.sin(u * Math.PI * 1.1 + 0.2) * 0.06 + Math.sin(u * Math.PI * 3.1) * 0.012
+        : 0.42 - u * 0.17 + Math.sin(u * Math.PI * 1.1 + 0.2) * 0.06 + Math.sin(u * Math.PI * 3.1) * 0.012
     return { x: x * this.w, y: y * this.h }
   }
 
@@ -220,19 +221,28 @@ export class HeroSmear {
     this.wake()
   }
 
-  /** Uncover the room from the previous point to p (element pixels), as brightly as the stroke shows it. */
-  reveal(p: Pt, fresh = false) {
+  /**
+   * Uncover the room from the previous point to p (element pixels), as brightly as the stroke shows it.
+   * Below full `strength` the brush narrows and thins, so the trail tapers off near clickable text.
+   */
+  reveal(p: Pt, fresh = false, strength = 1) {
+    if (strength <= 0) {
+      this.lift()
+      return
+    }
     const from = fresh || !this.last ? p : this.last
     const x = this.trail.x
     const d = Math.hypot(p.x - from.x, p.y - from.y)
     const n = Math.max(1, Math.ceil(d / 10))
-    const r = Math.min(this.w, this.h) * 0.1
+    const r = Math.min(this.w, this.h) * 0.1 * (0.35 + 0.65 * strength)
+    // Dabs overlap heavily along the path, so opacity falls off much faster than strength.
+    const a = strength * strength * strength
     for (let i = 1; i <= n; i++) {
       const cx = from.x + ((p.x - from.x) * i) / n
       const cy = from.y + ((p.y - from.y) * i) / n
       const g = x.createRadialGradient(cx, cy, 0, cx, cy, r)
-      g.addColorStop(0, 'rgba(255,255,255,1)')
-      g.addColorStop(0.55, 'rgba(255,255,255,1)')
+      g.addColorStop(0, `rgba(255,255,255,${a})`)
+      g.addColorStop(0.55, `rgba(255,255,255,${a})`)
       g.addColorStop(1, 'rgba(255,255,255,0)')
       x.fillStyle = g
       x.beginPath()
@@ -240,8 +250,17 @@ export class HeroSmear {
       x.fill()
     }
     this.last = p
-    this.lastMove = performance.now()
+    this.fadeUntil = performance.now() + 3000
+    this.fadeStep = 0.04
     this.trailLive = true
+    this.wake()
+  }
+
+  /** Fade the trail out quickly, so nothing lingers behind text the visitor has reached. */
+  hush() {
+    if (!this.trailLive) return
+    this.fadeUntil = Math.min(this.fadeUntil, performance.now() + 400)
+    this.fadeStep = 0.18
     this.wake()
   }
 
@@ -271,9 +290,9 @@ export class HeroSmear {
     // course the trail is cleared outright and leaves nothing behind.
     if (this.trailLive) {
       const x = this.trail.x
-      if (now - this.lastMove < 3000) {
+      if (now < this.fadeUntil) {
         x.globalCompositeOperation = 'destination-out'
-        x.globalAlpha = 0.04
+        x.globalAlpha = this.fadeStep
         x.fillStyle = '#000'
         x.fillRect(0, 0, this.w, this.h)
         x.globalAlpha = 1
