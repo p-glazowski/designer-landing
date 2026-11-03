@@ -7,9 +7,9 @@ const rooms = [
   {
     href: '#komercyjne',
     name: 'Wnętrza komercyjne',
-    line: 'Restauracje, hotele, butiki',
+    line: 'Biura, hotele, restauracje',
     src: 'hero-commercial',
-    alt: 'Bar z blatem z czarnego kamienia, orzechowymi ścianami i podświetlonymi półkami',
+    alt: 'Strefa wypoczynku w nowoczesnym biurze: miękkie fotele, okrągły dywan, drewniany sufit i szklane ściany',
   },
   {
     href: '#prywatne',

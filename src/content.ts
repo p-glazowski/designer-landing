@@ -61,7 +61,7 @@ export const materials: Material[] = [
 
 export const credits = [
   ['Peter Muniz', 'Unsplash'],
-  ['Panos Katsigiannis', 'Unsplash'],
+  ['Aalo Lens', 'Unsplash'],
   ['Puscas Adryan', 'Unsplash'],
   ['Decima Athens', 'Unsplash'],
   ['Luwadlin Bosman', 'Unsplash'],
