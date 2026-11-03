@@ -22,8 +22,8 @@ const rooms = [
 
 /**
  * One enormous brushstroke is dragged across the dark, and the room shows only
- * inside it. Moving across the screen trails smoke that uncovers the room for a
- * moment and drifts away.
+ * inside it. Moving across the screen uncovers the room for a moment before it
+ * sinks back into shadow.
  */
 export function Hero({ introDelay }: { introDelay: number }) {
   const rootRef = useRef<HTMLElement>(null)
@@ -38,7 +38,7 @@ export function Hero({ introDelay }: { introDelay: number }) {
     const reduced = prefersReducedMotion()
     const imgs = imgRefs.current.filter(Boolean) as HTMLImageElement[]
 
-    // A wisp drawn for the visitor once the stroke is down, so the smoke is seen before it is tried.
+    // A trail drawn for the visitor once the stroke is down, so the effect is seen before it is tried.
     const wisp = () => {
       const s = smear.current
       const r = canvas.getBoundingClientRect()

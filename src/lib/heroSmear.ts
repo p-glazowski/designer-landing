@@ -1,8 +1,8 @@
 import { drawCover, seeded, type Pt } from './smear'
 
 // The hero's picture is never shown whole. It lives inside one enormous
-// dry-brush stroke laid across the screen, and the cursor drags smoke
-// through the dark that lets the room show for a moment before it drifts away.
+// dry-brush stroke laid across the screen, and the cursor drags a trail
+// through the dark that lets the room show for a moment before it sinks back into shadow.
 
 type Options = {
   /** Called when the stroke has been fully laid down. */
@@ -200,7 +200,7 @@ export class HeroSmear {
     this.wake()
   }
 
-  /** Drag smoke from the previous point to p (element pixels). */
+  /** Drag the trail from the previous point to p (element pixels). */
   smoke(p: Pt, fresh = false) {
     const from = fresh || !this.last ? p : this.last
     const x = this.smokeA.x
@@ -245,7 +245,7 @@ export class HeroSmear {
       } else busy = true
     }
 
-    // Smoke rises a little, spreads and thins each frame.
+    // The trail rises a little, spreads and thins each frame.
     if (now - this.lastMove < 5000) {
       const b = this.smokeB
       b.x.setTransform(1, 0, 0, 1, 0, 0)
@@ -296,11 +296,6 @@ export class HeroSmear {
     ctx.globalAlpha = 1
     ctx.globalCompositeOperation = 'destination-in'
     ctx.drawImage(combo.c, 0, 0, w, h)
-    // The smoke has a body of its own: a pale haze, so it reads even over the dark.
-    ctx.globalCompositeOperation = 'screen'
-    ctx.globalAlpha = 0.4
-    ctx.drawImage(this.smokeA.c, 0, 0, w, h)
-    ctx.globalAlpha = 1
     ctx.globalCompositeOperation = 'source-over'
   }
 
