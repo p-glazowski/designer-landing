@@ -7,9 +7,9 @@ const rooms = [
   {
     href: '#komercyjne',
     name: 'Wnętrza komercyjne',
-    line: 'Biura, hotele, restauracje',
+    line: 'Hotele, biura, restauracje',
     src: 'hero-commercial',
-    alt: 'Strefa wypoczynku w nowoczesnym biurze: miękkie fotele, okrągły dywan, drewniany sufit i szklane ściany',
+    alt: 'Lobby z trawertynowymi ścianami, sufitem z drewnianych lameli i recepcją z ciemnego marmuru',
   },
   {
     href: '#prywatne',
@@ -50,7 +50,7 @@ export function Hero({ introDelay }: { introDelay: number }) {
         const k = Math.min(1, (now - t0) / ms)
         const x = (0.06 + k * 0.5) * r.width
         const y = (0.6 - k * 0.3 + Math.sin(k * Math.PI * 2.2) * 0.07) * r.height
-        s.smoke({ x, y }, first)
+        s.reveal({ x, y }, first)
         first = false
         if (k < 1) requestAnimationFrame(step)
         else s.lift()
@@ -73,8 +73,8 @@ export function Hero({ introDelay }: { introDelay: number }) {
       const r = canvas.getBoundingClientRect()
       return { x: e.clientX - r.left, y: e.clientY - r.top }
     }
-    const enter = (e: PointerEvent) => s.smoke(at(e), true)
-    const move = (e: PointerEvent) => s.smoke(at(e))
+    const enter = (e: PointerEvent) => s.reveal(at(e), true)
+    const move = (e: PointerEvent) => s.reveal(at(e))
     const leave = () => s.lift()
     if (!reduced) {
       root.addEventListener('pointerenter', enter)

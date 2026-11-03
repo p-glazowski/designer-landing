@@ -19,8 +19,7 @@ function layer() {
 export class HeroSmear {
   private ctx: CanvasRenderingContext2D
   private stroke = layer()
-  private smokeA = layer()
-  private smokeB = layer()
+  private trail = layer()
   private combo = layer()
   private w = 0
   private h = 0
@@ -94,7 +93,7 @@ export class HeroSmear {
     this.dpr = Math.min(window.devicePixelRatio || 1, 1.5)
     this.w = r.width
     this.h = r.height
-    for (const l of [this.stroke, this.smokeA, this.smokeB, this.combo]) {
+    for (const l of [this.stroke, this.trail, this.combo]) {
       l.c.width = Math.round(this.w * this.dpr)
       l.c.height = Math.round(this.h * this.dpr)
       l.x.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
@@ -109,13 +108,13 @@ export class HeroSmear {
     this.wake()
   }
 
-  // Bristles only fray the fringe of the stroke. Each keeps its own place, weight and
-  // dry-out point for the whole length and drifts slowly, as hairs do under a moving brush.
+  // Bristles only fray the outer edge of the stroke; inside it the room shows evenly.
+  // Each keeps its own place, weight and dry-out point and drifts slowly, as hairs do under a moving brush.
   private hairs = (() => {
     const r = seeded(17)
     return Array.from({ length: 150 }, () => {
-      const off = (r() < 0.5 ? -1 : 1) * (0.26 + r() * r() * 0.3)
-      const edge = (Math.abs(off) - 0.26) / 0.3
+      const off = (r() < 0.5 ? -1 : 1) * (0.42 + r() * r() * 0.15)
+      const edge = (Math.abs(off) - 0.42) / 0.15
       const gaps: [number, number][] = []
       for (let g = 0; g < 2; g++) {
         if (r() < 0.2 + edge * 0.5) {
@@ -127,7 +126,7 @@ export class HeroSmear {
         off,
         weight: 0.004 + r() * r() * 0.02,
         end: 1.02 - edge * (0.2 + r() * 0.5) - r() * 0.06,
-        drift: 0.02 + r() * 0.03,
+        drift: 0.008 + r() * 0.014,
         phase: r() * Math.PI * 2,
         gaps,
       }
@@ -150,12 +149,12 @@ export class HeroSmear {
       const wa = this.width(a)
       const wb = this.width(b)
 
-      // The loaded heart of the stroke: a broad band with soft, uneven edges.
-      if (b < 0.93) {
-        const half = (w: number, v: number) => w * (0.34 + Math.sin(v * 23) * 0.012 + Math.sin(v * 61) * 0.006) * (1 - Math.max(0, v - 0.7) * 1.2)
+      // The loaded heart of the stroke: one solid band with an uneven edge.
+      if (b < 0.95) {
+        const half = (w: number, v: number) => w * (0.45 + Math.sin(v * 23) * 0.01 + Math.sin(v * 61) * 0.005) * (1 - Math.max(0, v - 0.72) * 1.4)
         const ha = half(wa, a)
         const hb = half(wb, b)
-        x.filter = `blur(${Math.max(2, wb * 0.03)}px)`
+        x.filter = 'blur(1.5px)'
         x.beginPath()
         x.moveTo(pa.x + na.x * ha, pa.y + na.y * ha)
         x.lineTo(pb.x + nb.x * hb, pb.y + nb.y * hb)
@@ -200,10 +199,10 @@ export class HeroSmear {
     this.wake()
   }
 
-  /** Drag the trail from the previous point to p (element pixels). */
-  smoke(p: Pt, fresh = false) {
+  /** Uncover the room from the previous point to p (element pixels), as brightly as the stroke shows it. */
+  reveal(p: Pt, fresh = false) {
     const from = fresh || !this.last ? p : this.last
-    const x = this.smokeA.x
+    const x = this.trail.x
     const d = Math.hypot(p.x - from.x, p.y - from.y)
     const n = Math.max(1, Math.ceil(d / 10))
     const r = Math.min(this.w, this.h) * 0.1
@@ -211,8 +210,8 @@ export class HeroSmear {
       const cx = from.x + ((p.x - from.x) * i) / n
       const cy = from.y + ((p.y - from.y) * i) / n
       const g = x.createRadialGradient(cx, cy, 0, cx, cy, r)
-      g.addColorStop(0, 'rgba(255,255,255,0.5)')
-      g.addColorStop(0.45, 'rgba(255,255,255,0.22)')
+      g.addColorStop(0, 'rgba(255,255,255,1)')
+      g.addColorStop(0.55, 'rgba(255,255,255,1)')
       g.addColorStop(1, 'rgba(255,255,255,0)')
       x.fillStyle = g
       x.beginPath()
@@ -245,21 +244,15 @@ export class HeroSmear {
       } else busy = true
     }
 
-    // The trail rises a little, spreads and thins each frame.
-    if (now - this.lastMove < 5000) {
-      const b = this.smokeB
-      b.x.setTransform(1, 0, 0, 1, 0, 0)
-      b.x.clearRect(0, 0, b.c.width, b.c.height)
-      b.x.filter = 'blur(2px)'
-      b.x.globalAlpha = 0.978
-      const sway = Math.sin(now / 900) * 0.4 * this.dpr
-      b.x.drawImage(this.smokeA.c, sway, -1.1 * this.dpr)
-      b.x.filter = 'none'
-      b.x.globalAlpha = 1
-      b.x.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
-      const t = this.smokeA
-      this.smokeA = b
-      this.smokeB = t
+    // Where the cursor has passed, the room sinks back into shadow, in place.
+    if (now - this.lastMove < 4000) {
+      const x = this.trail.x
+      x.globalCompositeOperation = 'destination-out'
+      x.globalAlpha = 0.03
+      x.fillStyle = '#000'
+      x.fillRect(0, 0, this.w, this.h)
+      x.globalAlpha = 1
+      x.globalCompositeOperation = 'source-over'
       busy = true
     }
 
@@ -283,7 +276,7 @@ export class HeroSmear {
     combo.x.filter = 'blur(0.8px)'
     combo.x.drawImage(this.stroke.c, 0, 0)
     combo.x.filter = 'none'
-    combo.x.drawImage(this.smokeA.c, 0, 0)
+    combo.x.drawImage(this.trail.c, 0, 0)
 
     ctx.globalCompositeOperation = 'source-over'
     ctx.globalAlpha = 1
