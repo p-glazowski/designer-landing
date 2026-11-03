@@ -11,6 +11,18 @@ type Options = {
 
 const ease = (t: number) => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3)
 
+/** Smooth 1D value noise in [-1, 1]: stable for a given seed, so the edge looks the same on every redraw. */
+function noise(v: number, seed: number) {
+  const hash = (i: number) => {
+    const n = Math.sin(i * 127.1 + seed * 311.7) * 43758.5453
+    return (n - Math.floor(n)) * 2 - 1
+  }
+  const i = Math.floor(v)
+  const f = v - i
+  const t = f * f * (3 - 2 * f)
+  return hash(i) + (hash(i + 1) - hash(i)) * t
+}
+
 function layer() {
   const c = document.createElement('canvas')
   return { c, x: c.getContext('2d')! }
@@ -112,9 +124,9 @@ export class HeroSmear {
   // Each keeps its own place, weight and dry-out point and drifts slowly, as hairs do under a moving brush.
   private hairs = (() => {
     const r = seeded(17)
-    return Array.from({ length: 150 }, () => {
-      const off = (r() < 0.5 ? -1 : 1) * (0.42 + r() * r() * 0.15)
-      const edge = (Math.abs(off) - 0.42) / 0.15
+    return Array.from({ length: 220 }, () => {
+      const off = (r() < 0.5 ? -1 : 1) * (0.4 + r() * r() * 0.2)
+      const edge = (Math.abs(off) - 0.4) / 0.2
       const gaps: [number, number][] = []
       for (let g = 0; g < 2; g++) {
         if (r() < 0.2 + edge * 0.5) {
@@ -124,7 +136,8 @@ export class HeroSmear {
       }
       return {
         off,
-        weight: 0.004 + r() * r() * 0.02,
+        // Mostly fine hairs, with the odd clump where several stuck together.
+        weight: r() < 0.12 ? 0.02 + r() * 0.025 : 0.003 + r() * r() * 0.012,
         end: 1.02 - edge * (0.2 + r() * 0.5) - r() * 0.06,
         drift: 0.008 + r() * 0.014,
         phase: r() * Math.PI * 2,
@@ -139,7 +152,7 @@ export class HeroSmear {
     x.fillStyle = '#fff'
     x.lineCap = 'round'
     x.globalAlpha = 1
-    const step = 0.004
+    const step = 0.0025
     for (let a = this.laidTo; a < u - 1e-6; a += step) {
       const b = Math.min(u, a + step)
       const pa = this.path(a)
@@ -149,20 +162,27 @@ export class HeroSmear {
       const wa = this.width(a)
       const wb = this.width(b)
 
-      // The loaded heart of the stroke: one solid band with an uneven edge.
+      // The loaded heart of the stroke: one solid band. Each piece starts a little behind
+      // the last so no seam is left between them, and each edge is torn on its own.
       if (b < 0.95) {
-        const half = (w: number, v: number) => w * (0.45 + Math.sin(v * 23) * 0.01 + Math.sin(v * 61) * 0.005) * (1 - Math.max(0, v - 0.72) * 1.4)
-        const ha = half(wa, a)
-        const hb = half(wb, b)
-        x.filter = 'blur(1.5px)'
+        const fade = (v: number) => 1 - Math.max(0, v - 0.72) * 1.4
+        const rough = (v: number, seed: number) =>
+          0.44 + noise(v * 14, seed) * 0.05 + noise(v * 55, seed + 1) * 0.035 + noise(v * 190, seed + 2) * 0.022 + noise(v * 600, seed + 3) * 0.012
+        const a0 = Math.max(0, a - step * 0.6)
+        const p0 = this.path(a0)
+        const n0 = this.normal(a0)
+        const w0 = this.width(a0)
+        const top0 = w0 * rough(a0, 3) * fade(a0)
+        const bot0 = w0 * rough(a0, 7) * fade(a0)
+        const top1 = wb * rough(b, 3) * fade(b)
+        const bot1 = wb * rough(b, 7) * fade(b)
         x.beginPath()
-        x.moveTo(pa.x + na.x * ha, pa.y + na.y * ha)
-        x.lineTo(pb.x + nb.x * hb, pb.y + nb.y * hb)
-        x.lineTo(pb.x - nb.x * hb, pb.y - nb.y * hb)
-        x.lineTo(pa.x - na.x * ha, pa.y - na.y * ha)
+        x.moveTo(p0.x + n0.x * top0, p0.y + n0.y * top0)
+        x.lineTo(pb.x + nb.x * top1, pb.y + nb.y * top1)
+        x.lineTo(pb.x - nb.x * bot1, pb.y - nb.y * bot1)
+        x.lineTo(p0.x - n0.x * bot0, p0.y - n0.y * bot0)
         x.closePath()
         x.fill()
-        x.filter = 'none'
       }
 
       for (const h of this.hairs) {
