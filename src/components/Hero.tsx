@@ -9,7 +9,7 @@ const rooms = [
     name: 'Wnętrza komercyjne',
     line: 'Restauracje, hotele, butiki',
     src: 'hero-commercial',
-    alt: 'Restauracja wieczorem, drewniane stoły i lampy z bursztynowymi kloszami',
+    alt: 'Bar z blatem z czarnego kamienia, orzechowymi ścianami i podświetlonymi półkami',
   },
   {
     href: '#prywatne',
@@ -136,9 +136,6 @@ export function Hero({ introDelay }: { introDelay: number }) {
           zostawiają ślad.
         </h1>
         <div className="hero-aside" data-part>
-          <p className="hero-sub">
-            Studio projektowania wnętrz prywatnych i komercyjnych. Prowadzimy projekty od koncepcji po realizację.
-          </p>
           <ul className="hero-rooms">
             {rooms.map((r, i) => (
               <li key={r.href}>

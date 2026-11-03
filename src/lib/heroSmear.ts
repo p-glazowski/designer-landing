@@ -53,21 +53,24 @@ export class HeroSmear {
     this.resize()
   }
 
-  /** The path of the great stroke, in 0–1 coordinates: low on the left, rising to the right. */
+  /** The path of the great stroke, in 0–1 coordinates: a wrist's arc, low on the left, rising to the right. */
   private path(u: number): Pt {
     const x = -0.06 + u * 1.12
     // On a tall screen the stroke climbs more steeply, through the lit middle of the room.
-    const tall = this.h > this.w
-    const y = tall
-      ? 0.42 - u * 0.26 + Math.sin(u * Math.PI * 1.4 + 0.3) * 0.02
-      : 0.4 - u * 0.18 + Math.sin(u * Math.PI * 1.4 + 0.3) * 0.035
+    const y =
+      this.h > this.w
+        ? 0.44 - u * 0.28 + Math.sin(u * Math.PI * 1.1 + 0.2) * 0.04 + Math.sin(u * Math.PI * 3.1) * 0.008
+        : 0.42 - u * 0.2 + Math.sin(u * Math.PI * 1.1 + 0.2) * 0.06 + Math.sin(u * Math.PI * 3.1) * 0.012
     return { x: x * this.w, y: y * this.h }
   }
 
   private width(u: number) {
-    const base = this.h > this.w ? this.w * 0.5 : Math.min(this.h * 0.4, this.w * 0.34)
-    // Loaded at the start, thinning towards the end.
-    return base * (u < 0.05 ? 0.75 + (u / 0.05) * 0.25 : 1 - 0.25 * u)
+    const base = this.h > this.w ? this.w * 0.52 : Math.min(this.h * 0.42, this.w * 0.36)
+    // The pressure of a hand: loaded at the start, swelling and easing, lifting off at the end.
+    const pressure = 0.8 + 0.18 * Math.sin(u * Math.PI * 0.9 + 0.15) + 0.05 * Math.sin(u * Math.PI * 4.3)
+    const touch = u < 0.05 ? 0.7 + (u / 0.05) * 0.3 : 1
+    const lift = u > 0.82 ? 1 - Math.pow((u - 0.82) / 0.18, 2) * 0.55 : 1
+    return base * pressure * touch * lift
   }
 
   /** On a tall screen the room is zoomed from its bottom edge, matching the CSS underlay. */
@@ -106,24 +109,25 @@ export class HeroSmear {
     this.wake()
   }
 
-  // Every bristle keeps its own place, weight and dry-out point for the whole
-  // stroke, so the texture runs as continuous streaks the way a real brush leaves them.
+  // Bristles only fray the fringe of the stroke. Each keeps its own place, weight and
+  // dry-out point for the whole length and drifts slowly, as hairs do under a moving brush.
   private hairs = (() => {
     const r = seeded(17)
-    return Array.from({ length: 260 }, () => {
-      const off = (r() - 0.5) * (r() < 0.8 ? 0.9 : 1.04)
-      const edge = Math.abs(off) * 2
+    return Array.from({ length: 150 }, () => {
+      const off = (r() < 0.5 ? -1 : 1) * (0.26 + r() * r() * 0.3)
+      const edge = (Math.abs(off) - 0.26) / 0.3
       const gaps: [number, number][] = []
-      for (let g = 0; g < 3; g++) {
-        if (r() < 0.25 + edge * 0.4) {
-          const at = 0.15 + r() * 0.85
-          gaps.push([at, at + 0.02 + r() * 0.09 * (0.5 + at)])
+      for (let g = 0; g < 2; g++) {
+        if (r() < 0.2 + edge * 0.5) {
+          const at = 0.2 + r() * 0.8
+          gaps.push([at, at + 0.02 + r() * 0.08 * (0.5 + at)])
         }
       }
       return {
         off,
-        weight: 0.0025 + r() * r() * 0.016,
-        end: 1.04 - edge * edge * (0.25 + r() * 0.6) - r() * 0.08,
+        weight: 0.004 + r() * r() * 0.02,
+        end: 1.02 - edge * (0.2 + r() * 0.5) - r() * 0.06,
+        drift: 0.02 + r() * 0.03,
         phase: r() * Math.PI * 2,
         gaps,
       }
@@ -133,9 +137,10 @@ export class HeroSmear {
   private layTo(u: number) {
     const x = this.stroke.x
     x.strokeStyle = '#fff'
-    x.lineCap = 'butt'
+    x.fillStyle = '#fff'
+    x.lineCap = 'round'
     x.globalAlpha = 1
-    const step = 0.0035
+    const step = 0.004
     for (let a = this.laidTo; a < u - 1e-6; a += step) {
       const b = Math.min(u, a + step)
       const pa = this.path(a)
@@ -144,20 +149,28 @@ export class HeroSmear {
       const nb = this.normal(b)
       const wa = this.width(a)
       const wb = this.width(b)
-      // The loaded heart of the stroke, ending before the hairs do.
-      if (b < 0.86) {
-        const core = 0.5 * (1 - b * 0.35)
-        x.lineWidth = wb * core
+
+      // The loaded heart of the stroke: a broad band with soft, uneven edges.
+      if (b < 0.93) {
+        const half = (w: number, v: number) => w * (0.34 + Math.sin(v * 23) * 0.012 + Math.sin(v * 61) * 0.006) * (1 - Math.max(0, v - 0.7) * 1.2)
+        const ha = half(wa, a)
+        const hb = half(wb, b)
+        x.filter = `blur(${Math.max(2, wb * 0.03)}px)`
         x.beginPath()
-        x.moveTo(pa.x, pa.y)
-        x.lineTo(pb.x, pb.y)
-        x.stroke()
+        x.moveTo(pa.x + na.x * ha, pa.y + na.y * ha)
+        x.lineTo(pb.x + nb.x * hb, pb.y + nb.y * hb)
+        x.lineTo(pb.x - nb.x * hb, pb.y - nb.y * hb)
+        x.lineTo(pa.x - na.x * ha, pa.y - na.y * ha)
+        x.closePath()
+        x.fill()
+        x.filter = 'none'
       }
+
       for (const h of this.hairs) {
         if (b > h.end || h.gaps.some(([g0, g1]) => b > g0 && b < g1)) continue
-        const oa = (h.off + Math.sin(a * 9 + h.phase) * 0.006) * wa
-        const ob = (h.off + Math.sin(b * 9 + h.phase) * 0.006) * wb
-        x.lineWidth = Math.max(0.6, h.weight * wb)
+        const oa = (h.off + Math.sin(a * 2.6 + h.phase) * h.drift) * wa
+        const ob = (h.off + Math.sin(b * 2.6 + h.phase) * h.drift) * wb
+        x.lineWidth = Math.max(0.8, h.weight * wb)
         x.beginPath()
         x.moveTo(pa.x + na.x * oa, pa.y + na.y * oa)
         x.lineTo(pb.x + nb.x * ob, pb.y + nb.y * ob)
@@ -267,7 +280,9 @@ export class HeroSmear {
 
     combo.x.setTransform(1, 0, 0, 1, 0, 0)
     combo.x.clearRect(0, 0, combo.c.width, combo.c.height)
+    combo.x.filter = 'blur(0.8px)'
     combo.x.drawImage(this.stroke.c, 0, 0)
+    combo.x.filter = 'none'
     combo.x.drawImage(this.smokeA.c, 0, 0)
 
     ctx.globalCompositeOperation = 'source-over'
