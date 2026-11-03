@@ -59,15 +59,22 @@ export function bristle(
   ctx.globalAlpha = 1
 }
 
-/** Draws an image into a box the way `object-fit: cover` would. */
-export function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: number, h: number) {
+/**
+ * Draws an image into a box the way `object-fit: cover` would, optionally zoomed
+ * in further and anchored at (fx, fy), like `transform: scale()` with that origin.
+ */
+export function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, w: number, h: number, zoom = 1, fx = 0.5, fy = 0.5) {
   const ir = img.naturalWidth / img.naturalHeight
   const br = w / h
   let sw = img.naturalWidth
   let sh = img.naturalHeight
   if (ir > br) sw = sh * br
   else sh = sw / br
-  ctx.drawImage(img, (img.naturalWidth - sw) / 2, (img.naturalHeight - sh) / 2, sw, sh, 0, 0, w, h)
+  const cx = (img.naturalWidth - sw) / 2
+  const cy = (img.naturalHeight - sh) / 2
+  const zw = sw / zoom
+  const zh = sh / zoom
+  ctx.drawImage(img, cx + (sw - zw) * fx, cy + (sh - zh) * fy, zw, zh, 0, 0, w, h)
 }
 
 export const prefersReducedMotion = () =>
