@@ -360,14 +360,10 @@ button {
   object-fit: cover;
   filter: brightness(0.85) contrast(1.05);
   clip-path: inset(0 0 0 100%);
-  z-index: 1;
-  transition: clip-path 0s 0.75s;
 }
 
-.work-frame img.is-active {
+.work-frame img:first-child {
   clip-path: inset(0 0 0 0);
-  z-index: 2;
-  transition: clip-path 0.75s var(--ease);
 }
 
 /* ---------- Statement ---------- */
