@@ -51,7 +51,7 @@ function FooterName() {
   )
 }
 
-/** A contact card laid on a photograph, then the page closes on the studio's name, full width. The form is for show: sending does nothing yet. */
+/** A contact form set straight on the photograph's wall, then the page closes on the studio's name, full width. The form is for show: sending does nothing yet. */
 export function Contact() {
   return (
     <>
@@ -59,32 +59,34 @@ export function Contact() {
         <div className="contact-photo">
           <img data-zoom src="/media/contact.jpg" alt="Okrągły kinkiet rzucający ciepłe światło na ciemną, fakturowaną ścianę" width={2000} height={3000} loading="lazy" decoding="async" />
         </div>
-        <div className="card" data-reveal>
-          <h2 id="contact-title" data-part>
-            Umów konsultację
-          </h2>
-          <p data-part>Projekty w całej Polsce, w pracowni lub u Ciebie na miejscu.</p>
-          <div className="card-direct" data-part>
-            <a className="card-phone" href={`tel:${contact.phone.replace(/\s/g, '')}`}>
-              {contact.phone}
-            </a>
-            <p>Poniedziałek–piątek, 9:00–17:00</p>
-            <a href={`mailto:${contact.email}`}>{contact.email}</a>
+        <div className="contact-panel" data-reveal>
+          <div>
+            <h2 id="contact-title" data-part>
+              Umów konsultację
+            </h2>
+            <p data-part>Projekty w całej Polsce, w pracowni lub u Ciebie na miejscu.</p>
+            <div className="contact-direct" data-part>
+              <a className="contact-phone" href={`tel:${contact.phone.replace(/\s/g, '')}`}>
+                {contact.phone}
+              </a>
+              <p className="contact-hours">Poniedziałek–piątek, 9:00–17:00</p>
+              <a href={`mailto:${contact.email}`}>{contact.email}</a>
+            </div>
           </div>
-          <form className="card-form" onSubmit={(e) => e.preventDefault()}>
-            <div className="card-field" data-part>
+          <form className="contact-form" onSubmit={(e) => e.preventDefault()}>
+            <div className="contact-field" data-part>
               <label htmlFor="contact-name">Imię</label>
-              <input id="contact-name" name="name" type="text" autoComplete="name" />
+              <input id="contact-name" name="name" type="text" autoComplete="name" placeholder=" " />
             </div>
-            <div className="card-field" data-part>
+            <div className="contact-field" data-part>
               <label htmlFor="contact-email">E-mail</label>
-              <input id="contact-email" name="email" type="email" autoComplete="email" />
+              <input id="contact-email" name="email" type="email" autoComplete="email" placeholder=" " />
             </div>
-            <div className="card-field" data-part>
+            <div className="contact-field contact-field-wide" data-part>
               <label htmlFor="contact-message">Wiadomość</label>
-              <textarea id="contact-message" name="message" rows={3} data-lenis-prevent />
+              <textarea id="contact-message" name="message" rows={3} placeholder=" " data-lenis-prevent />
             </div>
-            <button type="submit" className="button card-button" data-part>
+            <button type="submit" className="button contact-button" data-part>
               Wyślij wiadomość
             </button>
           </form>
