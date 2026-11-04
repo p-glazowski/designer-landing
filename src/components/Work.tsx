@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { commercialWork, privateWork, type Project } from '../content'
+import { projects, type Project } from '../data'
 import { prefersReducedMotion } from '../lib/smear'
 
+const featured = projects.filter((p) => p.featured)
+const privateWork = featured.filter((p) => p.category === 'private')
+const commercialWork = featured.filter((p) => p.category === 'commercial')
 const all = [...privateWork, ...commercialWork]
 const HIDDEN = 'inset(0 0 0 100%)'
 const OPEN = 'inset(0 0 0 0)'
@@ -9,10 +12,10 @@ const OPEN = 'inset(0 0 0 0)'
 function Row({ p, active, onActive }: { p: Project; active: boolean; onActive: () => void }) {
   return (
     <li className={`work-row${active ? ' is-active' : ''}`}>
-      <img className="work-thumb" src={`/media/${p.img}.jpg`} alt={p.alt} width={p.w} height={p.h} loading="lazy" decoding="async" />
-      <a href="#kontakt" onPointerEnter={onActive} onFocus={onActive} aria-describedby={`meta-${p.img}`}>
+      <img className="work-thumb" src={p.cover.src} alt={p.cover.alt} width={p.cover.w} height={p.cover.h} style={{ objectPosition: p.cover.focus }} loading="lazy" decoding="async" />
+      <a href={`/realizacje/${p.slug}`} onPointerEnter={onActive} onFocus={onActive} aria-describedby={`meta-${p.slug}`}>
         <span className="work-name">{p.name}</span>
-        <span className="work-meta" id={`meta-${p.img}`}>
+        <span className="work-meta" id={`meta-${p.slug}`}>
           {p.kind}<br />
           {p.city}, {p.year}
         </span>
@@ -23,7 +26,7 @@ function Row({ p, active, onActive }: { p: Project; active: boolean; onActive: (
 
 /** The project names are the index; the active one is shown lit in a fixed frame. */
 export function Work() {
-  const [active, setActive] = useState(all[0].img)
+  const [active, setActive] = useState(all[0].slug)
   const frame = useRef<HTMLDivElement>(null)
   const shown = useRef(active)
   const top = useRef(1)
@@ -98,7 +101,7 @@ export function Work() {
         </h3>
         <ul data-part>
           {privateWork.map((p) => (
-            <Row key={p.img} p={p} active={active === p.img} onActive={() => setActive(p.img)} />
+            <Row key={p.slug} p={p} active={active === p.slug} onActive={() => setActive(p.slug)} />
           ))}
         </ul>
         <h3 className="work-group" id="komercyjne" tabIndex={-1} data-part>
@@ -106,20 +109,26 @@ export function Work() {
         </h3>
         <ul data-part>
           {commercialWork.map((p) => (
-            <Row key={p.img} p={p} active={active === p.img} onActive={() => setActive(p.img)} />
+            <Row key={p.slug} p={p} active={active === p.slug} onActive={() => setActive(p.slug)} />
           ))}
         </ul>
+        <p className="work-all" data-part>
+          <a className="stroke-link" href="/realizacje">
+            Zobacz wszystkie realizacje
+          </a>
+        </p>
       </div>
 
       <div className="work-frame" aria-hidden="true" ref={frame}>
         {all.map((p) => (
           <img
-            key={p.img}
-            data-project={p.img}
-            src={`/media/${p.img}.jpg`}
+            key={p.slug}
+            data-project={p.slug}
+            src={p.cover.src}
             alt=""
-            width={p.w}
-            height={p.h}
+            width={p.cover.w}
+            height={p.cover.h}
+            style={{ objectPosition: p.cover.focus }}
             loading="lazy"
             decoding="async"
           />

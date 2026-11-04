@@ -15,12 +15,20 @@ export function scrollToHash(hash: string) {
   el.focus({ preventScroll: true })
 }
 
+export function scrollToTop() {
+  if (lenis) lenis.scrollTo(0, { duration: 1.4 })
+  else window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+}
+
+/** After the page's height changes on its own, such as a filter hiding some of it. */
+export const refreshScroll = () => ScrollTrigger.refresh()
+
 /**
  * Smooth scroll, in-page anchors, and the entrance for the parts of every section.
  * Content is visible by default; the hidden starting state is only applied here,
- * so nothing stays hidden if the script fails.
+ * so nothing stays hidden if the script fails. Runs afresh for each page.
  */
-export function initMotion() {
+export function initMotion({ heroDelay = 0 }: { heroDelay?: number } = {}) {
   const onAnchor = (e: MouseEvent) => {
     const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href^="#"]')
     if (!a || a.getAttribute('href') === '#') return
@@ -69,9 +77,24 @@ export function initMotion() {
         ease: 'power3.out',
         stagger: 0.08,
         // The hero's copy rises as the welcome wipes away, not behind it.
-        delay: group.closest('.hero') ? 1 : 0,
-        scrollTrigger: { trigger: group, start: 'top 82%', once: true },
+        delay: group.closest('.hero') ? heroDelay : 0,
+        // A page's opening words sit low on the first screen: they arrive without waiting for a scroll.
+        scrollTrigger: { trigger: group, start: group.closest('.hero, .case-hero') ? 'top bottom' : 'top 82%', once: true },
       })
+    })
+
+    // The same wipe as the home page's project frame: a photo arrives like a stroke across the wall.
+    gsap.utils.toArray<HTMLElement>('[data-wipe]').forEach((el) => {
+      gsap.fromTo(
+        el,
+        { clipPath: 'inset(0 0 0 100%)' },
+        {
+          clipPath: 'inset(0 0 0 0%)',
+          duration: 1.2,
+          ease: 'power3.inOut',
+          scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+        },
+      )
     })
 
     // Photographs breathe slowly as they pass: a scroll-linked scale.

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { brand } from '../content'
 import { stopScroll } from '../lib/motion'
+import { useRoute } from '../lib/router'
 
 const links = [
-  { id: 'realizacje', label: 'Realizacje' },
-  { id: 'proces', label: 'Proces' },
-  { id: 'przed-i-po', label: 'Przed i po' },
+  { href: '/realizacje', label: 'Realizacje' },
+  { href: '/#proces', id: 'proces', label: 'Proces' },
+  { href: '/#przed-i-po', id: 'przed-i-po', label: 'Przed i po' },
 ]
 
 /** Past this many pixels the nav stops sitting on the room and becomes a bar. */
@@ -22,6 +23,7 @@ export function Nav() {
   const [tucked, setTucked] = useState(false)
   const [current, setCurrent] = useState<string | null>(null)
   const menuRef = useRef<HTMLDialogElement>(null)
+  const { path } = useRoute()
 
   useEffect(() => {
     let last = window.scrollY
@@ -43,6 +45,7 @@ export function Nav() {
 
   // The section crossing the middle of the screen is the one being read.
   useEffect(() => {
+    setCurrent(null)
     const io = new IntersectionObserver(
       (entries) => {
         setCurrent((was) => {
@@ -57,11 +60,11 @@ export function Nav() {
       { rootMargin: '-50% 0px -50% 0px' },
     )
     for (const { id } of links) {
-      const section = document.getElementById(id)
+      const section = id && document.getElementById(id)
       if (section) io.observe(section)
     }
     return () => io.disconnect()
-  }, [])
+  }, [path])
 
   const openMenu = () => {
     menuRef.current?.showModal()
@@ -87,15 +90,20 @@ export function Nav() {
 
   const classes = ['nav', !atTop && 'is-bar', tucked && 'is-tucked'].filter(Boolean).join(' ')
 
+  const ariaCurrent = (href: string, id?: string) => {
+    if (id) return current === id ? 'location' : undefined
+    return path === href || path.startsWith(`${href}/`) ? 'page' : undefined
+  }
+
   return (
     <nav className={classes} aria-label="Główna">
-      <a className="wordmark" href="#top" aria-label={`${brand}, na początek strony`}>
+      <a className="wordmark" href="/#top" aria-label={`${brand}, na początek strony głównej`}>
         {brand}
       </a>
 
       <div className="nav-links">
-        {links.map(({ id, label }) => (
-          <a key={id} href={`#${id}`} aria-current={current === id ? 'location' : undefined}>
+        {links.map(({ href, id, label }) => (
+          <a key={href} href={href} aria-current={ariaCurrent(href, id)}>
             {label}
           </a>
         ))}
@@ -110,7 +118,7 @@ export function Nav() {
 
       <dialog className="nav-menu" ref={menuRef} aria-label="Menu" onClose={() => stopScroll(false)}>
         <div className="nav-menu-top">
-          <a className="wordmark" href="#top" onClick={closeMenu}>
+          <a className="wordmark" href="/#top" onClick={closeMenu}>
             {brand}
           </a>
           <button className="nav-toggle" type="button" onClick={closeMenu}>
@@ -118,9 +126,9 @@ export function Nav() {
           </button>
         </div>
         <ul className="nav-menu-links">
-          {links.map(({ id, label }) => (
-            <li key={id}>
-              <a href={`#${id}`} onClick={closeMenu}>
+          {links.map(({ href, label }) => (
+            <li key={href}>
+              <a href={href} onClick={closeMenu}>
                 {label}
               </a>
             </li>
