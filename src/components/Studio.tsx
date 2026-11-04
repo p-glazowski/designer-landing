@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { brand } from '../content'
 import { prefersReducedMotion } from '../lib/smear'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -55,9 +54,6 @@ export function Studio() {
           {walls.map((w) => (
             <span className={`studio-wall ${w}`} aria-hidden="true" key={w} />
           ))}
-          <p className="studio-sub">
-            <strong>{brand}</strong> projektuje wnętrza prywatne i komercyjne.
-          </p>
           <h2 id="studio-title" className="studio-title">
             O studiu
           </h2>

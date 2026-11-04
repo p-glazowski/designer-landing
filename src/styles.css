@@ -639,20 +639,6 @@ button {
 .w3 { --l: 58%; --w: 26%; }
 .w4 { --l: 92%; --w: 9%; transform-origin: 100% 50%; }
 
-.studio-sub {
-  position: absolute;
-  top: var(--m);
-  left: 59.5%;
-  width: 23.5%;
-  font-size: var(--step-lead);
-  line-height: 1.16;
-  letter-spacing: -0.02em;
-}
-
-.studio-sub strong {
-  font-weight: 500;
-}
-
 .studio-title {
   position: absolute;
   left: var(--m);
@@ -872,15 +858,6 @@ button {
 /* ---------- Tablet: the index and the moodboard take their phone compositions ---------- */
 
 @media (max-width: 1024px) {
-  /* Too narrow to sit on one stretch of wall: the sentence gets its own band. */
-  .studio-sub {
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: var(--m);
-    background: var(--bg);
-  }
-
   /* Text above the strips: the two no longer fit side by side. */
   .studio-body {
     grid-template-columns: minmax(0, 1fr);
