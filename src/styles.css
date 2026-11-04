@@ -596,58 +596,149 @@ button {
 
 /* ---------- Studio ---------- */
 
-.studio {
+.studio-stage {
+  height: 260svh;
+}
+
+.studio-room {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.studio-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.studio-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  opacity: 0.45;
+}
+
+.studio-wall {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--l);
+  width: var(--w);
+  background: var(--bg);
+  will-change: transform;
+}
+
+.w0 { --l: -1%; --w: 15%; transform-origin: 0 50%; }
+.w1 { --l: 17.5%; --w: 23.5%; }
+.w2 { --l: 48%; --w: 8%; }
+.w3 { --l: 58%; --w: 26%; }
+.w4 { --l: 92%; --w: 9%; transform-origin: 100% 50%; }
+
+.studio-title {
+  position: absolute;
+  left: var(--m);
+  bottom: calc(var(--m) * 0.75);
+  /* Runs margin to margin: "O studiu" sets about 3.4em wide. */
+  font-size: calc((100vw - 2 * var(--m)) / 3.4);
+  font-weight: 500;
+  line-height: 0.82;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+}
+
+.studio-body {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   column-gap: 24px;
-  padding: 140px var(--m) var(--gap);
+  padding: var(--gap) var(--m);
 }
 
-.studio .section-title {
+.studio-line {
   grid-column: 1 / -1;
-  margin-bottom: 48px;
+  margin: 0 0 clamp(72px, 10vw, 160px);
+  font-size: 8.4vw;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.045em;
 }
 
-.studio-facts {
-  grid-column: 1 / 3;
-  display: grid;
-  gap: 12px;
-  align-content: start;
-  color: var(--muted);
-  font-size: var(--step-small);
+.studio-line-row {
+  display: block;
+}
+
+.studio-line-row:last-child {
+  text-align: right;
 }
 
 .studio-text {
-  grid-column: 3 / 13;
+  grid-column: 1 / 6;
+  align-self: end;
+  display: grid;
+  gap: 32px;
 }
 
-.studio-text p {
-  max-width: 60ch;
-  color: var(--muted);
-}
-
-.studio-text .studio-lead {
-  max-width: none;
+.studio-text p:first-child {
   font-size: var(--step-lead);
-  line-height: 1.22;
+  line-height: 1.16;
   letter-spacing: -0.02em;
 }
 
-.studio-text p + p {
-  margin-top: 40px;
+.studio-text p:last-child {
+  max-width: 52ch;
 }
 
-.studio-text strong {
-  font-weight: 400;
-  color: var(--ink);
+.studio-crafts {
+  grid-column: 7 / 13;
+  display: flex;
+  gap: 12px;
+  height: clamp(420px, 72svh, 720px);
 }
 
-.studio-text img {
-  float: left;
-  width: 3.66em;
-  height: 3.66em;
-  margin: 0.14em 0.5em 0 0;
+.studio-crafts li {
+  flex: 1 1 0;
+  min-width: 0;
+  transition: flex-grow 0.7s var(--ease);
+}
+
+.studio-crafts li:nth-child(1) { flex-grow: 1.5; }
+.studio-crafts li:nth-child(2) { flex-grow: 0.7; }
+.studio-crafts li:nth-child(3) { flex-grow: 1; }
+
+@media (hover: hover) {
+  .studio-crafts:hover li { flex-grow: 0.7; }
+  .studio-crafts li:hover { flex-grow: 2.2; }
+}
+
+.studio-crafts figure {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.studio-strip {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.studio-strip img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+}
+
+/* Keep the black stone; the lower part of this photograph is a white counter. */
+.studio-crafts li:first-child img {
+  height: 165%;
+}
+
+.studio-crafts figcaption {
+  margin-top: 12px;
 }
 
 /* ---------- Contact ---------- */
@@ -767,6 +858,21 @@ button {
 /* ---------- Tablet: the index and the moodboard take their phone compositions ---------- */
 
 @media (max-width: 1024px) {
+  /* Text above the strips: the two no longer fit side by side. */
+  .studio-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .studio-text,
+  .studio-crafts {
+    grid-column: 1 / -1;
+  }
+
+  .studio-crafts {
+    height: 84vw;
+    margin-top: 56px;
+  }
+
   .hero h1,
   .hero-aside {
     grid-row: auto;
@@ -878,16 +984,13 @@ button {
   }
 
   .work,
-  .statement,
-  .studio {
+  .statement {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .work-list,
   .statement-text,
-  .statement-photos,
-  .studio-facts,
-  .studio-text {
+  .statement-photos {
     grid-column: 1 / -1;
   }
 
@@ -929,31 +1032,18 @@ button {
     padding-bottom: 72px;
   }
 
-  .studio {
-    padding-top: 72px;
+  .studio-stage {
+    height: 220svh;
   }
 
-  .studio .section-title {
-    margin-bottom: 32px;
+  .studio-line {
+    margin-bottom: 56px;
+    font-size: 9.4vw;
   }
 
-  .studio-facts {
-    order: 3;
-    grid-template-columns: minmax(0, 1fr);
-    margin-top: 40px;
-  }
-
-  .studio-lead {
-    line-height: 1.25;
-  }
-
-  .studio-text img {
-    width: 3.8em;
-    height: 3.8em;
-  }
-
-  .studio-text p + p {
-    margin-left: 0;
+  .studio-crafts {
+    gap: 8px;
+    height: 112vw;
   }
 
   .contact {
@@ -998,6 +1088,14 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .studio-stage {
+    height: auto;
+  }
+
+  .studio-room {
+    position: relative;
+  }
+
   *,
   *::before,
   *::after {
