@@ -7,17 +7,25 @@ gsap.registerPlugin(ScrollTrigger)
 
 let lenis: Lenis | null = null
 
+/**
+ * Lenis only smooths the wheel, and on phones its long jumps were cut off in their first frames,
+ * landing far short of the target. Touch scrolling is native anyway, so links use the browser's too.
+ */
+const lenisForLinks = () => (matchMedia('(pointer: coarse)').matches ? null : lenis)
+
 export function scrollToHash(hash: string) {
   const el = document.querySelector<HTMLElement>(hash)
   if (!el) return
+  const smooth = lenisForLinks()
   // Lenis ignores scroll-margin, which the browser's own scrolling below does honour.
-  if (lenis) lenis.scrollTo(el, { offset: -parseFloat(getComputedStyle(el).scrollMarginTop), duration: 1.4 })
+  if (smooth) smooth.scrollTo(el, { offset: -parseFloat(getComputedStyle(el).scrollMarginTop), duration: 1.4 })
   else el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
   el.focus({ preventScroll: true })
 }
 
 export function scrollToTop() {
-  if (lenis) lenis.scrollTo(0, { duration: 1.4 })
+  const smooth = lenisForLinks()
+  if (smooth) smooth.scrollTo(0, { duration: 1.4 })
   else window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
 }
 
