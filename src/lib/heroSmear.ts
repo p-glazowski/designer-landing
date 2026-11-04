@@ -189,7 +189,10 @@ export class HeroSmear {
     this.brushWidth += (goal - this.brushWidth) * (1 - Math.exp(-dt / 180))
 
     const last = s.points[s.points.length - 1]
-    if (!last || Math.hypot(this.brush.x - last.x, this.brush.y - last.y) >= SPACING) {
+    const gap = last ? Math.hypot(this.brush.x - last.x, this.brush.y - last.y) : Infinity
+    // Coming to rest lays one last point right at the brush, so the ribbon ends there and can age away.
+    const resting = Math.hypot(this.target.x - this.brush.x, this.target.y - this.brush.y) < 0.5
+    if (gap >= SPACING || (resting && gap > 0.5)) {
       s.points.push({ ...this.brush, born: now, width: this.brushWidth })
     }
   }
@@ -197,6 +200,9 @@ export class HeroSmear {
   /** The stroke's points as drawn right now: the tail eased along to where it has retracted, the head up to the brush. */
   private livePoints(s: Stroke, now: number) {
     const pts = [...s.points]
+    const end = pts[pts.length - 1]
+    // Every point has run its time: the ribbon has fully retracted, even if the cursor is still resting there.
+    if (!end || now - end.born >= s.life) return []
     const first = pts[0]
     const next = pts[1]
     if (next && now - first.born >= s.life) {
@@ -208,7 +214,9 @@ export class HeroSmear {
         width: first.width + (next.width - first.width) * f,
       }
     }
-    if (s === this.current && pts.length) pts.push({ ...this.brush, born: now, width: this.brushWidth })
+    if (s === this.current && Math.hypot(this.brush.x - end.x, this.brush.y - end.y) > 0.5) {
+      pts.push({ ...this.brush, born: now, width: this.brushWidth })
+    }
     return pts
   }
 
@@ -275,7 +283,7 @@ export class HeroSmear {
 
     if (this.auto && now >= this.nextAuto) {
       if (this.strokes.filter((s) => s.auto).length < MAX_AUTO) this.spawnAuto(now)
-      this.nextAuto = now + between(1300, 2400)
+      this.nextAuto = now + between(2200, 3800)
     }
     for (const s of this.strokes) if (s.auto && s.open) this.advanceAuto(s, now)
     this.advanceBrush(dt, now)
