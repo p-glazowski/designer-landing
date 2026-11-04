@@ -178,9 +178,8 @@ export class BeforeAfterSmear {
   }
 
   /** Move every wandering smudge along its arc, and let a new one in when it is due. */
-  private drive(now: number, held: boolean) {
-    if (held) this.nextStroke = now + 900
-    else if (this.ambient && now >= this.nextStroke && this.strokes.length < MAX_STROKES) {
+  private drive(now: number) {
+    if (this.ambient && now >= this.nextStroke && this.strokes.length < MAX_STROKES) {
       this.spawn(now)
       this.nextStroke = now + 500 + Math.random() * 500
     }
@@ -246,8 +245,8 @@ export class BeforeAfterSmear {
       }
     }
 
+    this.drive(now)
     const to = this.target()
-    this.drive(now, !!to)
 
     if (to) {
       const from = this.pos ?? to
