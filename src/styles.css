@@ -174,22 +174,36 @@ button {
   height: 100%;
 }
 
+/* Rooms stay stacked in a fixed order and only fade, so a switch never dips to dark and can reverse mid-fade. */
 .hero-stage img {
   object-fit: cover;
-  filter: brightness(0.07) saturate(0.6);
   opacity: 0;
   transition: opacity 0.7s;
 }
 
-.hero-stage img.is-active {
+.hero-stage img.is-shown {
   opacity: 1;
 }
 
-@media (max-aspect-ratio: 1/1) {
-  .hero-stage img {
-    transform: scale(1.35);
-    transform-origin: 50% 100%;
-  }
+/* Just enough shade under the nav and headline to keep them readable on a bright room. */
+.hero-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(to bottom, rgb(0 0 0 / 0.5), transparent 22%),
+    linear-gradient(to top, rgb(0 0 0 / 0.72), rgb(0 0 0 / 0.3) 30%, transparent 58%);
+}
+
+/* The blur softens the ink's edge; the canvas overhangs so it never shows a clean cut at the screen's edge. */
+.hero-stage canvas {
+  inset: -12px;
+  z-index: 2;
+  width: calc(100% + 24px);
+  height: calc(100% + 24px);
+  filter: blur(4px);
+  pointer-events: none;
 }
 
 .nav {

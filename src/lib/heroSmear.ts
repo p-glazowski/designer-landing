@@ -1,38 +1,45 @@
-import { drawCover, seeded, type Pt } from './smear'
+import type { Pt } from './smear'
 
-// The hero's picture is never shown whole. It lives inside one enormous
-// dry-brush stroke laid across the screen, and the cursor drags a trail
-// through the dark that lets the room show for a moment before it sinks back into shadow.
+// The hero's room is shown whole, and black ink is smeared across it: the cursor
+// drags a long smooth smudge, and others sweep through on their own. Every smudge
+// is the same thing, a line of points that each thin away a fixed time after they
+// were laid, so a stroke draws itself forward and retracts from its tail.
 
-type Options = {
-  /** Called when the stroke has been fully laid down. */
-  onLaid?: () => void
+type Point = Pt & { born: number; width: number }
+
+type Stroke = {
+  points: Point[]
+  /** How long each point stays on the canvas, in ms. */
+  life: number
+  /** Distance travelled so far, for swelling in from a fine start. */
+  travelled: number
+  /** False once nothing will add to the stroke any more. */
+  open: boolean
+  /** Present on a smudge that draws itself. */
+  auto?: { from: Pt; c1: Pt; c2: Pt; to: Pt; width: number; start: number; ms: number; u: number; step: number }
 }
 
-const ease = (t: number) => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3)
+const SPACING = 9
+const MAX_AUTO = 4
 
-/** Smooth 1D value noise in [-1, 1]: stable for a given seed, so the edge looks the same on every redraw. */
-function noise(v: number, seed: number) {
-  const hash = (i: number) => {
-    const n = Math.sin(i * 127.1 + seed * 311.7) * 43758.5453
-    return (n - Math.floor(n)) * 2 - 1
+const clamp = (v: number, a = 0, b = 1) => Math.min(Math.max(v, a), b)
+const smooth = (t: number) => t * t * (3 - 2 * t)
+const between = (a: number, b: number) => a + Math.random() * (b - a)
+
+function bezier(s: NonNullable<Stroke['auto']>, u: number): Pt {
+  const v = 1 - u
+  const [a, b, c, d] = [v * v * v, 3 * v * v * u, 3 * v * u * u, u * u * u]
+  return {
+    x: a * s.from.x + b * s.c1.x + c * s.c2.x + d * s.to.x,
+    y: a * s.from.y + b * s.c1.y + c * s.c2.y + d * s.to.y,
   }
-  const i = Math.floor(v)
-  const f = v - i
-  const t = f * f * (3 - 2 * f)
-  return hash(i) + (hash(i + 1) - hash(i)) * t
-}
-
-function layer() {
-  const c = document.createElement('canvas')
-  return { c, x: c.getContext('2d')! }
 }
 
 export class HeroSmear {
+  private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
-  private stroke = layer()
-  private trail = layer()
-  private combo = layer()
+  private layer = document.createElement('canvas')
+  private lx = this.layer.getContext('2d')!
   private w = 0
   private h = 0
   private dpr = 1
@@ -40,65 +47,30 @@ export class HeroSmear {
   private ro: ResizeObserver
   private io: IntersectionObserver
   private visible = true
-  private last: Pt | null = null
-  private fadeUntil = 0
-  private fadeStep = 0.04
-  private trailLive = false
-  private laidTo = 0
-  private laying: { start: number; ms: number } | null = null
-  private fade = { from: -1, to: 0, start: 0 }
-  private canvas: HTMLCanvasElement
-  private images: HTMLImageElement[]
-  private opts: Options
+  private strokes: Stroke[] = []
+  private auto = false
+  private nextAuto = 0
+  private lastTick = 0
+  // The brush follows the pointer with a little lag, which is what irons out the hand's jitter.
+  private target: Pt | null = null
+  private brush: Pt = { x: 0, y: 0 }
+  private brushWidth = 0
+  private current: Stroke | null = null
 
-  constructor(canvas: HTMLCanvasElement, images: HTMLImageElement[], opts: Options = {}) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
-    this.images = images
-    this.opts = opts
     this.ctx = canvas.getContext('2d')!
     this.ro = new ResizeObserver(() => this.resize())
     this.ro.observe(canvas)
     this.io = new IntersectionObserver(([e]) => {
       this.visible = e.isIntersecting
-      if (this.visible) this.wake()
+      if (this.visible) {
+        this.nextAuto = performance.now() + 300
+        this.wake()
+      }
     })
     this.io.observe(canvas)
     this.resize()
-  }
-
-  /** The path of the great stroke, in 0–1 coordinates: a wrist's arc, low on the left, rising to the right. */
-  private path(u: number): Pt {
-    const x = -0.06 + u * 1.12
-    // On a tall screen the stroke climbs more steeply, through the lit middle of the room.
-    const y =
-      this.h > this.w
-        ? 0.44 - u * 0.28 + Math.sin(u * Math.PI * 1.1 + 0.2) * 0.04 + Math.sin(u * Math.PI * 3.1) * 0.008
-        : 0.42 - u * 0.17 + Math.sin(u * Math.PI * 1.1 + 0.2) * 0.06 + Math.sin(u * Math.PI * 3.1) * 0.012
-    return { x: x * this.w, y: y * this.h }
-  }
-
-  private width(u: number) {
-    const base = this.h > this.w ? this.w * 0.52 : Math.min(this.h * 0.42, this.w * 0.36)
-    // The pressure of a hand: loaded at the start, swelling and easing, lifting off at the end.
-    const pressure = 0.8 + 0.18 * Math.sin(u * Math.PI * 0.9 + 0.15) + 0.05 * Math.sin(u * Math.PI * 4.3)
-    const touch = u < 0.05 ? 0.7 + (u / 0.05) * 0.3 : 1
-    const lift = u > 0.82 ? 1 - Math.pow((u - 0.82) / 0.18, 2) * 0.55 : 1
-    return base * pressure * touch * lift
-  }
-
-  /** On a tall screen the room is zoomed from its bottom edge, matching the CSS underlay. */
-  private frame(): [number, number, number] {
-    return this.h > this.w ? [1.35, 0.5, 1] : [1, 0.5, 0.5]
-  }
-
-  /** Unit normal of the path at u. */
-  private normal(u: number): Pt {
-    const a = this.path(Math.max(0, u - 0.002))
-    const b = this.path(Math.min(1, u + 0.002))
-    const dx = b.x - a.x
-    const dy = b.y - a.y
-    const len = Math.hypot(dx, dy) || 1
-    return { x: -dy / len, y: dx / len }
   }
 
   private resize() {
@@ -107,165 +79,163 @@ export class HeroSmear {
     this.dpr = Math.min(window.devicePixelRatio || 1, 1.5)
     this.w = r.width
     this.h = r.height
-    for (const l of [this.stroke, this.trail, this.combo]) {
-      l.c.width = Math.round(this.w * this.dpr)
-      l.c.height = Math.round(this.h * this.dpr)
-      l.x.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
+    for (const [c, x] of [
+      [this.canvas, this.ctx],
+      [this.layer, this.lx],
+    ] as const) {
+      c.width = Math.round(this.w * this.dpr)
+      c.height = Math.round(this.h * this.dpr)
+      x.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
     }
-    this.canvas.width = Math.round(this.w * this.dpr)
-    this.canvas.height = Math.round(this.h * this.dpr)
-    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
-    // The stroke is redrawn at the new size up to wherever it had reached.
-    const reached = this.laidTo
-    this.laidTo = 0
-    this.layTo(reached)
     this.wake()
   }
 
-  // Bristles only fray the outer edge of the stroke; inside it the room shows evenly.
-  // Each keeps its own place, weight and dry-out point and drifts slowly, as hairs do under a moving brush.
-  private hairs = (() => {
-    const r = seeded(17)
-    return Array.from({ length: 220 }, () => {
-      const off = (r() < 0.5 ? -1 : 1) * (0.4 + r() * r() * 0.2)
-      const edge = (Math.abs(off) - 0.4) / 0.2
-      const gaps: [number, number][] = []
-      for (let g = 0; g < 2; g++) {
-        if (r() < 0.2 + edge * 0.5) {
-          const at = 0.2 + r() * 0.8
-          gaps.push([at, at + 0.02 + r() * 0.08 * (0.5 + at)])
-        }
-      }
-      return {
-        off,
-        // Mostly fine hairs, with the odd clump where several stuck together.
-        weight: r() < 0.12 ? 0.02 + r() * 0.025 : 0.003 + r() * r() * 0.012,
-        end: 1.02 - edge * (0.2 + r() * 0.5) - r() * 0.06,
-        drift: 0.008 + r() * 0.014,
-        phase: r() * Math.PI * 2,
-        gaps,
-      }
+  private get baseWidth() {
+    return Math.min(this.w, this.h) * 0.1
+  }
+
+  /** Begin the smudges that sweep through on their own. */
+  start() {
+    this.auto = true
+    this.nextAuto = performance.now()
+    this.wake()
+  }
+
+  /** The pointer came onto the hero at p (element pixels): a new smudge starts there. */
+  enter(p: Pt) {
+    this.leave()
+    this.target = p
+    this.brush = { ...p }
+    this.brushWidth = this.baseWidth
+    this.current = { points: [], life: 2600, travelled: 0, open: true }
+    this.strokes.push(this.current)
+    this.wake()
+  }
+
+  move(p: Pt) {
+    if (!this.target) {
+      this.enter(p)
+      return
+    }
+    this.target = p
+    this.wake()
+  }
+
+  leave() {
+    if (this.current) this.current.open = false
+    this.current = null
+    this.target = null
+  }
+
+  /** A long curve across the room, mostly along the screen's longer side so it reads as a sweep of the arm. */
+  private spawnAuto(now: number) {
+    const long = Math.max(this.w, this.h)
+    const length = long * between(0.75, 1.25)
+    const axis = this.h > this.w ? Math.PI / 2 : 0
+    const spread = Math.random() < 0.75 ? 0.65 : Math.PI / 2
+    const angle = axis + between(-spread, spread) + (Math.random() < 0.5 ? Math.PI : 0)
+    const dir = { x: Math.cos(angle), y: Math.sin(angle) }
+    const side = { x: -dir.y, y: dir.x }
+    const mid = { x: this.w * between(0.15, 0.85), y: this.h * between(0.12, 0.88) }
+    const at = (along: number, off: number) => ({
+      x: mid.x + dir.x * along * length + side.x * off * length,
+      y: mid.y + dir.y * along * length + side.y * off * length,
     })
-  })()
+    // Bends both handles one way for an arc, or opposite ways for a lazy S.
+    const bend = between(0.12, 0.3) * (Math.random() < 0.5 ? -1 : 1)
+    const c2Bend = Math.random() < 0.6 ? bend : -bend
+    this.strokes.push({
+      points: [],
+      life: between(1700, 2700),
+      travelled: 0,
+      open: true,
+      auto: {
+        from: at(-0.5, 0),
+        c1: at(-0.17, bend),
+        c2: at(0.17, c2Bend),
+        to: at(0.5, 0),
+        width: Math.min(this.w, this.h) * between(0.06, 0.15),
+        start: now,
+        ms: between(1300, 2200),
+        u: 0,
+        step: SPACING / length,
+      },
+    })
+  }
 
-  private layTo(u: number) {
-    const x = this.stroke.x
-    x.strokeStyle = '#fff'
-    x.fillStyle = '#fff'
+  private advanceAuto(s: Stroke, now: number) {
+    const a = s.auto!
+    const t = clamp((now - a.start) / a.ms)
+    const head = 0.5 - Math.cos(t * Math.PI) / 2
+    while (a.u < head) {
+      a.u = Math.min(head, a.u + a.step)
+      // Pressure of a hand: touching down, leaning in, lifting off.
+      const pressure = Math.pow(Math.sin(a.u * Math.PI), 0.55) * (0.88 + 0.12 * Math.sin(a.u * 7 + a.width))
+      s.points.push({ ...bezier(a, a.u), born: now, width: a.width * pressure })
+    }
+    if (t >= 1) s.open = false
+  }
+
+  private advanceBrush(dt: number, now: number) {
+    const s = this.current
+    if (!s || !this.target) return
+    const k = 1 - Math.exp(-dt / 75)
+    const px = this.brush.x
+    const py = this.brush.y
+    this.brush.x += (this.target.x - px) * k
+    this.brush.y += (this.target.y - py) * k
+    const speed = Math.hypot(this.brush.x - px, this.brush.y - py) / Math.max(dt, 1)
+    // A fast arm presses lighter, so quick sweeps come out long and lean.
+    const goal = this.baseWidth * (1.15 - 0.55 * clamp(speed / 2.4))
+    this.brushWidth += (goal - this.brushWidth) * (1 - Math.exp(-dt / 180))
+
+    const last = s.points[s.points.length - 1]
+    const gap = last ? Math.hypot(this.brush.x - last.x, this.brush.y - last.y) : Infinity
+    if (gap >= SPACING) {
+      s.travelled += last ? gap : 0
+      const swell = 0.2 + 0.8 * smooth(clamp(s.travelled / (this.baseWidth * 3)))
+      s.points.push({ ...this.brush, born: now, width: this.brushWidth * swell })
+    }
+  }
+
+  private draw(now: number, scale: number) {
+    const x = this.lx
+    x.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
+    x.clearRect(0, 0, this.w, this.h)
+    x.strokeStyle = '#000'
     x.lineCap = 'round'
-    x.globalAlpha = 1
-    const step = 0.0025
-    for (let a = this.laidTo; a < u - 1e-6; a += step) {
-      const b = Math.min(u, a + step)
-      const pa = this.path(a)
-      const pb = this.path(b)
-      const na = this.normal(a)
-      const nb = this.normal(b)
-      const wa = this.width(a)
-      const wb = this.width(b)
-
-      // The loaded heart of the stroke: one solid band. Each piece starts a little behind
-      // the last so no seam is left between them, and each edge is torn on its own.
-      if (b < 0.95) {
-        const fade = (v: number) => 1 - Math.max(0, v - 0.72) * 1.4
-        const rough = (v: number, seed: number) =>
-          0.44 + noise(v * 14, seed) * 0.05 + noise(v * 55, seed + 1) * 0.035 + noise(v * 190, seed + 2) * 0.022 + noise(v * 600, seed + 3) * 0.012
-        const a0 = Math.max(0, a - step * 0.6)
-        const p0 = this.path(a0)
-        const n0 = this.normal(a0)
-        const w0 = this.width(a0)
-        const top0 = w0 * rough(a0, 3) * fade(a0)
-        const bot0 = w0 * rough(a0, 7) * fade(a0)
-        const top1 = wb * rough(b, 3) * fade(b)
-        const bot1 = wb * rough(b, 7) * fade(b)
+    x.lineJoin = 'round'
+    for (const s of this.strokes) {
+      const pts = s.points
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p = pts[i]
+        const n = pts[i + 1]
+        const prev = pts[i - 1] ?? p
+        // Stays full for a while, then thins all the way out, so the tail comes to a long point.
+        const fade = 1 - smooth(clamp(((now - p.born) / s.life - 0.3) / 0.7))
+        const width = p.width * fade * scale
+        if (width < 0.4) continue
+        x.lineWidth = width
         x.beginPath()
-        x.moveTo(p0.x + n0.x * top0, p0.y + n0.y * top0)
-        x.lineTo(pb.x + nb.x * top1, pb.y + nb.y * top1)
-        x.lineTo(pb.x - nb.x * bot1, pb.y - nb.y * bot1)
-        x.lineTo(p0.x - n0.x * bot0, p0.y - n0.y * bot0)
-        x.closePath()
-        x.fill()
-      }
-
-      for (const h of this.hairs) {
-        if (b > h.end || h.gaps.some(([g0, g1]) => b > g0 && b < g1)) continue
-        const oa = (h.off + Math.sin(a * 2.6 + h.phase) * h.drift) * wa
-        const ob = (h.off + Math.sin(b * 2.6 + h.phase) * h.drift) * wb
-        x.lineWidth = Math.max(0.8, h.weight * wb)
-        x.beginPath()
-        x.moveTo(pa.x + na.x * oa, pa.y + na.y * oa)
-        x.lineTo(pb.x + nb.x * ob, pb.y + nb.y * ob)
+        x.moveTo((prev.x + p.x) / 2, (prev.y + p.y) / 2)
+        x.quadraticCurveTo(p.x, p.y, (p.x + n.x) / 2, (p.y + n.y) / 2)
         x.stroke()
       }
     }
-    this.laidTo = Math.max(this.laidTo, u)
   }
 
-  /** Lay the stroke across the screen over `ms`; 0 lays it at once. */
-  lay(ms: number) {
-    if (ms <= 0) {
-      this.layTo(1)
-      this.opts.onLaid?.()
-      this.wake()
-      return
-    }
-    this.laying = { start: performance.now(), ms }
-    this.wake()
-  }
-
-  /** Cross-fade the picture inside the stroke to image `i`. */
-  show(i: number) {
-    const current = this.fade.to
-    if (i === current) return
-    this.fade = { from: current, to: i, start: performance.now() }
-    this.wake()
-  }
-
-  /**
-   * Uncover the room from the previous point to p (element pixels), as brightly as the stroke shows it.
-   * Below full `strength` the brush narrows and thins, so the trail tapers off near clickable text.
-   */
-  reveal(p: Pt, fresh = false, strength = 1) {
-    if (strength <= 0) {
-      this.lift()
-      return
-    }
-    const from = fresh || !this.last ? p : this.last
-    const x = this.trail.x
-    const d = Math.hypot(p.x - from.x, p.y - from.y)
-    const n = Math.max(1, Math.ceil(d / 10))
-    const r = Math.min(this.w, this.h) * 0.1 * (0.35 + 0.65 * strength)
-    // Dabs overlap heavily along the path, so opacity falls off much faster than strength.
-    const a = strength * strength * strength
-    for (let i = 1; i <= n; i++) {
-      const cx = from.x + ((p.x - from.x) * i) / n
-      const cy = from.y + ((p.y - from.y) * i) / n
-      const g = x.createRadialGradient(cx, cy, 0, cx, cy, r)
-      g.addColorStop(0, `rgba(255,255,255,${a})`)
-      g.addColorStop(0.55, `rgba(255,255,255,${a})`)
-      g.addColorStop(1, 'rgba(255,255,255,0)')
-      x.fillStyle = g
-      x.beginPath()
-      x.arc(cx, cy, r, 0, Math.PI * 2)
-      x.fill()
-    }
-    this.last = p
-    this.fadeUntil = performance.now() + 3000
-    this.fadeStep = 0.04
-    this.trailLive = true
-    this.wake()
-  }
-
-  /** Fade the trail out quickly, so nothing lingers behind text the visitor has reached. */
-  hush() {
-    if (!this.trailLive) return
-    this.fadeUntil = Math.min(this.fadeUntil, performance.now() + 400)
-    this.fadeStep = 0.18
-    this.wake()
-  }
-
-  lift() {
-    this.last = null
+  private render(now: number) {
+    const { ctx, w, h } = this
+    if (!w || !h) return
+    ctx.clearRect(0, 0, w, h)
+    // Ink at full width first and thin, then a denser heart: the edge of the smudge lets the room through.
+    this.draw(now, 1)
+    ctx.globalAlpha = 0.55
+    ctx.drawImage(this.layer, 0, 0, w, h)
+    this.draw(now, 0.74)
+    ctx.globalAlpha = 0.96
+    ctx.drawImage(this.layer, 0, 0, w, h)
+    ctx.globalAlpha = 1
   }
 
   private wake() {
@@ -274,74 +244,34 @@ export class HeroSmear {
 
   private tick = (now: number) => {
     this.raf = 0
-    let busy = false
+    const dt = Math.min(now - (this.lastTick || now), 100)
+    this.lastTick = now
 
-    if (this.laying) {
-      const t = (now - this.laying.start) / this.laying.ms
-      this.layTo(ease(t))
-      if (t >= 1) {
-        this.laying = null
-        this.opts.onLaid?.()
-      } else busy = true
+    if (this.auto && now >= this.nextAuto) {
+      if (this.strokes.filter((s) => s.auto).length < MAX_AUTO) this.spawnAuto(now)
+      this.nextAuto = now + between(800, 1700)
     }
+    for (const s of this.strokes) if (s.auto && s.open) this.advanceAuto(s, now)
+    this.advanceBrush(dt, now)
 
-    // Where the cursor has passed, the room sinks back into shadow, in place.
-    // A fractional fade stalls at faint 8-bit values, so once it has run its
-    // course the trail is cleared outright and leaves nothing behind.
-    if (this.trailLive) {
-      const x = this.trail.x
-      if (now < this.fadeUntil) {
-        x.globalCompositeOperation = 'destination-out'
-        x.globalAlpha = this.fadeStep
-        x.fillStyle = '#000'
-        x.fillRect(0, 0, this.w, this.h)
-        x.globalAlpha = 1
-        x.globalCompositeOperation = 'source-over'
-        busy = true
-      } else {
-        x.clearRect(0, 0, this.w, this.h)
-        this.trailLive = false
-      }
+    for (const s of this.strokes) {
+      let dead = 0
+      while (dead < s.points.length && now - s.points[dead].born >= s.life) dead++
+      if (dead) s.points.splice(0, dead)
     }
+    this.strokes = this.strokes.filter((s) => s.open || s.points.length)
 
-    const f = this.fade.from >= 0 ? (now - this.fade.start) / 700 : 1
-    if (f < 1) busy = true
-    this.render(Math.min(f, 1))
-    if (f >= 1) this.fade.from = -1
+    this.render(now)
 
-    if (busy) this.wake()
-  }
-
-  private render(f: number) {
-    const { ctx, w, h, combo } = this
-    if (!w || !h) return
-    const to = this.images[this.fade.to]
-    const from = this.fade.from >= 0 ? this.images[this.fade.from] : null
-    if (!to?.complete || !to.naturalWidth) return
-
-    combo.x.setTransform(1, 0, 0, 1, 0, 0)
-    combo.x.clearRect(0, 0, combo.c.width, combo.c.height)
-    combo.x.filter = 'blur(0.8px)'
-    combo.x.drawImage(this.stroke.c, 0, 0)
-    combo.x.filter = 'none'
-    combo.x.drawImage(this.trail.c, 0, 0)
-
-    ctx.globalCompositeOperation = 'source-over'
-    ctx.globalAlpha = 1
-    ctx.clearRect(0, 0, w, h)
-    if (from && f < 1 && from.complete) {
-      drawCover(ctx, from, w, h, ...this.frame())
-      ctx.globalAlpha = ease(f)
-    }
-    drawCover(ctx, to, w, h, ...this.frame())
-    ctx.globalAlpha = 1
-    ctx.globalCompositeOperation = 'destination-in'
-    ctx.drawImage(combo.c, 0, 0, w, h)
-    ctx.globalCompositeOperation = 'source-over'
+    const brushMoving = this.target && Math.hypot(this.target.x - this.brush.x, this.target.y - this.brush.y) > 0.5
+    if (this.auto || brushMoving || this.strokes.some((s) => s.points.length)) this.wake()
+    else this.lastTick = 0
   }
 
   destroy() {
     cancelAnimationFrame(this.raf)
+    this.raf = 0
+    this.visible = false
     this.ro.disconnect()
     this.io.disconnect()
   }
