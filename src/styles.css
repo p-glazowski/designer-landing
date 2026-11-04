@@ -12,6 +12,8 @@
   --accent-ink: #1a1512;
   --field-1: #c8c0b5;
   --field-1-ink: #1a1512;
+  --logo-taupe: #5d4841;
+  --logo-pink: #fec7c8;
 
   --font: 'Switzer', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
@@ -206,12 +208,12 @@ button {
     linear-gradient(to top, rgb(0 0 0 / 0.72), rgb(0 0 0 / 0.3) 30%, transparent 58%);
 }
 
-/* The blur softens the paint's edge; the canvas overhangs so it never shows a clean cut at the screen's edge. */
+/* A touch of blur takes the digital edge off the ribbons; the canvas overhangs so it doesn't fade out at the screen's edge. */
 .hero-stage canvas {
   inset: -12px;
   width: calc(100% + 24px);
   height: calc(100% + 24px);
-  filter: blur(3px);
+  filter: blur(1px);
   pointer-events: none;
 }
 

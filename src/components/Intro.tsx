@@ -5,8 +5,8 @@ const css = (name: string) => getComputedStyle(document.documentElement).getProp
 const ease = (t: number) => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3)
 
 /**
- * Welcome: one stroke of wet plaster is dragged across the dark room and the
- * word "ślad" (a trace) is left in it; then the brush wipes the darkness away.
+ * Welcome, in the logo's colours: the studio's pink S-mark is drawn across the taupe and
+ * the word "ślad" (a trace) is left in it; then the brush wipes the taupe away.
  */
 export function Intro() {
   const [show, setShow] = useState(() => !prefersReducedMotion())
@@ -25,27 +25,62 @@ export function Intro() {
     canvas.height = H * dpr
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-    const ground = css('--bg')
-    const plaster = css('--field-1')
+    const ground = css('--logo-taupe')
+    const plaster = css('--logo-pink')
     ctx.fillStyle = ground
     ctx.fillRect(0, 0, W, H)
 
-    const band = Math.min(H * 0.26, W * 0.34, 240)
-    const cy = H * 0.5
-    const x0 = W * 0.08
-    const x1 = W * 0.92
-    const fontSize = band * 0.62
+    // The mark's proportions: it leaves and arrives vertically, so its flat cuts are level
+    // with each other, and it is broad at the ends with a narrower waist.
+    const run = Math.min(W * 0.72, H * 0.86)
+    const rise = run * 0.7
+    const endWidth = run * 0.36
+    const waist = 0.7
+    // Long enough that the ends' curves stay wider than the ribbon, which would otherwise fold over itself.
+    const handle = rise * 0.52
+    const from = { x: (W - run) / 2, y: (H + rise) / 2 }
+    const to = { x: (W + run) / 2, y: (H - rise) / 2 }
+    const c1 = { x: from.x, y: from.y - handle }
+    const c2 = { x: to.x, y: to.y + handle }
+    const fontSize = endWidth * waist * 0.6
+
+    const pointAt = (u: number) => {
+      const v = 1 - u
+      const [a, b, c, d] = [v * v * v, 3 * v * v * u, 3 * v * u * u, u * u * u]
+      return { x: a * from.x + b * c1.x + c * c2.x + d * to.x, y: a * from.y + b * c1.y + c * c2.y + d * to.y }
+    }
+    const directionAt = (u: number) => {
+      const v = 1 - u
+      const [a, b, c] = [3 * v * v, 6 * v * u, 3 * u * u]
+      const x = a * (c1.x - from.x) + b * (c2.x - c1.x) + c * (to.x - c2.x)
+      const y = a * (c1.y - from.y) + b * (c2.y - c1.y) + c * (to.y - c2.y)
+      const len = Math.hypot(x, y) || 1
+      return { x: x / len, y: y / len }
+    }
+    /** Fill the mark from its start up to `reach` (0–1), cut flat at the leading edge. */
+    const fillMark = (reach: number) => {
+      const steps = Math.max(2, Math.ceil(reach * 160))
+      const left: { x: number; y: number }[] = []
+      const right: { x: number; y: number }[] = []
+      for (let i = 0; i <= steps; i++) {
+        const u = (reach * i) / steps
+        const p = pointAt(u)
+        const dir = directionAt(u)
+        const fromMiddle = 2 * u - 1
+        const half = (endWidth * (waist + (1 - waist) * fromMiddle * fromMiddle)) / 2
+        left.push({ x: p.x - dir.y * half, y: p.y + dir.x * half })
+        right.push({ x: p.x + dir.y * half, y: p.y - dir.x * half })
+      }
+      ctx.beginPath()
+      left.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)))
+      right.reverse().forEach((p) => ctx.lineTo(p.x, p.y))
+      ctx.closePath()
+      ctx.fill()
+    }
 
     let raf = 0
     let start = 0
-    let paintedTo = x0
     let actOneDone = false
-    const bandCanvas = document.createElement('canvas')
-    bandCanvas.width = canvas.width
-    bandCanvas.height = canvas.height
-    const bctx = bandCanvas.getContext('2d')!
-    bctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    const randBand = seeded(11)
     const randWipe = seeded(23)
     const wipes = Array.from({ length: 6 }, (_, i) => ({
       y: (H / 5) * i - H * 0.05,
@@ -68,42 +103,28 @@ export function Intro() {
       if (!start) start = now
       const t = (now - start) / 1000
 
-      // Act one: the stroke is laid down, left to right, with the word inside it.
-      // The stroke builds up on its own layer so the word is never painted over.
+      // Act one: the mark is drawn from its lower end to its upper, with the word
+      // along its waist, uncovered as the leading edge passes it.
       const p = ease(t / 1.4)
-      const target = x0 + (x1 - x0) * p
       if (!actOneDone) {
-        if (target > paintedTo + 0.5) {
-          const wobble = (x: number) => cy + Math.sin((x / W) * Math.PI * 1.3 + 0.4) * band * 0.12 - (x / W) * band * 0.1
-          bctx.strokeStyle = plaster
-          const steps = Math.ceil((target - paintedTo) / 5)
-          for (let i = 0; i < steps; i++) {
-            const a = paintedTo + ((target - paintedTo) * i) / steps
-            const b = paintedTo + ((target - paintedTo) * (i + 1)) / steps
-            const u = (b - x0) / (x1 - x0)
-            // Loaded at the start, running dry towards the end.
-            const width = band * (u < 0.05 ? 0.55 + (u / 0.05) * 0.45 : 1 - 0.22 * u)
-            const pa = { x: a, y: wobble(a) }
-            const pb = { x: b, y: wobble(b) }
-            bristle(bctx, pa, pb, width, randBand, 1 - 0.35 * u * u, 0, u * u * 0.75)
-            bristle(bctx, pa, pb, width * 0.7, randBand, 0.85 - 0.5 * u, 0, u * 0.6)
-          }
-          paintedTo = target
-        }
         ctx.globalCompositeOperation = 'source-over'
         ctx.fillStyle = ground
         ctx.fillRect(0, 0, W, H)
-        ctx.drawImage(bandCanvas, 0, 0, W, H)
-        const reveal = p >= 1 ? W : target - band * 0.35
+        ctx.fillStyle = plaster
+        fillMark(p)
+        const mid = pointAt(0.5)
+        const slope = directionAt(0.5)
         ctx.save()
         ctx.beginPath()
-        ctx.rect(0, 0, Math.max(0, reveal), H)
+        ctx.rect(0, 0, p >= 1 ? W : Math.max(0, pointAt(p).x), H)
         ctx.clip()
+        ctx.translate(mid.x, mid.y)
+        ctx.rotate(Math.atan2(slope.y, slope.x))
         ctx.fillStyle = ground
         ctx.font = `500 ${fontSize}px Switzer, system-ui, sans-serif`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillText('ślad', W / 2, cy + fontSize * 0.04)
+        ctx.fillText('ślad', 0, fontSize * 0.04)
         ctx.restore()
         if (p >= 1) actOneDone = true
       }
