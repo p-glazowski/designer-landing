@@ -217,17 +217,39 @@ button {
   pointer-events: none;
 }
 
+/* Only its controls catch the pointer, so the cursor keeps smearing the room right up to them. */
 .nav {
-  position: absolute;
-  z-index: 1;
-  top: var(--m);
-  left: var(--m);
-  right: var(--m);
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 24px;
+  padding: clamp(12px, 1.4vw, 18px) var(--m);
   font-size: var(--step-small);
+  pointer-events: none;
+  transition: transform 0.5s var(--ease), background 0.3s;
+}
+
+.nav a,
+.nav button {
+  pointer-events: auto;
+}
+
+.nav.is-bar {
+  background: var(--surface);
+}
+
+.nav.is-tucked {
+  transform: translateY(-100%);
+}
+
+/* Tabbing into a tucked nav brings it back. */
+.nav.is-tucked:has(:focus-visible) {
+  transform: none;
 }
 
 .wordmark {
@@ -243,13 +265,111 @@ button {
   gap: 28px;
 }
 
+.nav .button {
+  min-height: 40px;
+  padding: 0 18px;
+}
+
 .nav-links a:not(.button) {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
   text-decoration: none;
   color: var(--ink);
 }
 
-.nav-links a:not(.button):hover {
-  text-decoration: underline;
+/* A stroke of the studio's rose: drawn in on hover, left in place under the section being read. */
+.nav-links a:not(.button)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 7px;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 100% 50%;
+  transition: transform 0.45s var(--ease);
+}
+
+.nav-links a:not(.button):hover::after,
+.nav-links a[aria-current]::after {
+  transform: scaleX(1);
+  transform-origin: 0 50%;
+}
+
+.nav-toggle {
+  display: none;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: var(--step-small);
+  font-weight: 500;
+}
+
+/* The page behind the phone menu stays where it is. */
+html:has(.nav-menu[open]) {
+  overflow: hidden;
+}
+
+.nav-menu {
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: clamp(12px, 1.4vw, 18px) var(--m) clamp(28px, 5svh, 48px);
+  border: 0;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.nav-menu[open] {
+  display: flex;
+  flex-direction: column;
+  animation: nav-menu-in 0.35s ease both;
+}
+
+@keyframes nav-menu-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.nav-menu-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-menu-links {
+  display: grid;
+  gap: 8px;
+  margin-block: auto;
+  font-size: var(--step-head);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.nav-menu-links a {
+  display: block;
+  padding-block: 6px;
+  text-decoration: none;
+}
+
+.nav-menu .button {
+  min-height: 52px;
+  font-size: var(--step-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-menu[open] {
+    animation: none;
+  }
 }
 
 .hero-copy {
@@ -868,6 +988,17 @@ button {
 
 /* ---------- Tablet: the index takes its phone composition ---------- */
 
+/* The narrowest phones have room for the name and the menu only; the action is one tap away inside it. */
+@media (max-width: 345px) {
+  .nav-links {
+    display: none;
+  }
+
+  .nav-toggle {
+    margin-left: auto;
+  }
+}
+
 @media (max-width: 1024px) {
   /* Text above the strips: the two no longer fit side by side. */
   .studio-body {
@@ -945,14 +1076,28 @@ button {
 }
 
 @media (max-width: 760px) {
+  .nav {
+    gap: 16px;
+  }
+
+  .nav-links {
+    margin-left: auto;
+  }
+
   .nav-links a:not(.button) {
     display: none;
   }
 
   .nav .button {
-    min-height: 40px;
     padding: 0 14px;
-    font-size: var(--step-small);
+  }
+
+  .nav-menu .button {
+    min-height: 52px;
+  }
+
+  .nav-toggle {
+    display: block;
   }
 
   .hero-rooms a {
