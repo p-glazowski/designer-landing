@@ -877,7 +877,7 @@ html:has(.nav-menu[open]) {
 .contact {
   position: relative;
   height: 100svh;
-  min-height: 640px;
+  min-height: 800px;
   overflow: hidden;
 }
 
@@ -895,53 +895,154 @@ html:has(.nav-menu[open]) {
   object-position: 50% 6%;
 }
 
-.card {
+/* No box: the words sit on the wall, lit by the same room as the lamp beside them. */
+.contact-panel {
   position: absolute;
-  top: 60px;
-  left: 60px;
-  width: 380px;
-  padding: 32px 32px 0;
-  background: var(--field-1);
-  color: var(--field-1-ink);
+  inset-block: 124px 48px; /* the top clears the nav when it drops back in */
+  left: var(--m);
+  width: clamp(400px, 40vw, 600px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
 }
 
-.card h2 {
-  font-size: var(--step-lead);
+.contact-panel h2 {
+  font-size: var(--step-head);
   font-weight: 400;
-  letter-spacing: -0.02em;
-  margin-bottom: 16px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin-bottom: 20px;
 }
 
-.card dl {
-  margin: 20px 0;
-  display: grid;
-  gap: 4px;
+.contact-direct {
+  margin-top: 28px;
+}
+
+.contact-direct a {
+  text-decoration-color: var(--accent);
+  transition: color 0.18s;
+}
+
+.contact-direct a:hover {
+  color: var(--accent);
+}
+
+.contact-phone {
+  font-size: var(--step-lead);
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 
-.card dl div {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
+.contact-hours {
+  margin-top: 8px;
 }
 
-.card dd {
-  text-align: right;
+.contact-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 32px;
 }
 
-.card-button {
-  display: flex;
-  width: calc(100% + 64px);
-  min-height: 52px;
-  margin: 24px -32px 0;
+.contact-field {
+  position: relative;
+}
+
+.contact-field-wide,
+.contact-button {
+  grid-column: 1 / -1;
+}
+
+.contact-field label {
+  display: block;
+  font-size: var(--step-small);
+}
+
+.contact-field input,
+.contact-field textarea {
+  display: block;
+  width: 100%;
+  padding: 8px 0 10px;
+  border: 0;
+  border-bottom: 1px solid var(--muted);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  caret-color: var(--accent);
+  font: inherit;
+}
+
+.contact-field input:focus,
+.contact-field textarea:focus {
+  outline: none;
+}
+
+.contact-field textarea {
+  resize: none;
+}
+
+/* The browser's autofill would otherwise paint a pale box on the wall. */
+.contact-field input:-webkit-autofill {
+  -webkit-text-fill-color: var(--ink);
+  transition: background-color 9999s;
+}
+
+/* A smear of rose runs along the line as the visitor writes, and stays once something is written. */
+.contact-field::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 4px;
+  background: var(--accent);
+  clip-path: polygon(0 50%, 10% 0, 100% 30%, 100% 70%, 10% 100%);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.7s var(--ease);
+  pointer-events: none;
+}
+
+.contact-field:focus-within::after,
+.contact-field:has(input:not(:placeholder-shown), textarea:not(:placeholder-shown))::after {
+  transform: scaleX(1);
+}
+
+.contact-button {
+  width: 100%;
+  min-height: 56px;
   border: 0;
   cursor: pointer;
-  background: var(--bg);
-  color: var(--ink);
 }
 
-.card-button:hover {
-  background: var(--surface);
+.contact-button:focus-visible {
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-field::after {
+    transition: none;
+  }
+}
+
+/* The words move under the photo where they would run into the lamp (narrow) or the bed below it (portrait). */
+@media (max-width: 960px), (orientation: portrait) {
+  .contact {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .contact-photo {
+    position: relative;
+    height: 70svh;
+  }
+
+  .contact-panel {
+    position: relative;
+    inset: auto;
+    width: auto;
+    margin: 48px var(--m) 0;
+    gap: 40px;
+  }
 }
 
 /* ---------- Footer ---------- */
@@ -1244,27 +1345,13 @@ html:has(.nav-menu[open]) {
     height: 112vw;
   }
 
-  .contact {
-    height: auto;
-    min-height: 0;
-    overflow: visible;
+  .contact-form {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .contact-photo {
-    position: relative;
-    height: 70svh;
-  }
-
-  .card {
-    position: relative;
-    top: auto;
-    left: auto;
-    width: auto;
-    margin: -80px var(--m) 0;
-  }
-
-  .card-button {
-    min-height: 56px;
+  .contact-direct a {
+    display: inline-block;
+    padding-block: 8px;
   }
 
   .footer {
