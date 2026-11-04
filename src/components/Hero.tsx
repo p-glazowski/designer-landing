@@ -156,7 +156,7 @@ export function Hero({ introDelay }: { introDelay: number }) {
         <div className="nav-links">
           <a href="#realizacje">Realizacje</a>
           <a href="#proces">Proces</a>
-          <a href="#materia">Materia</a>
+          <a href="#przed-i-po">Przed i po</a>
           <a className="button" href="#kontakt">
             Umów konsultację
           </a>

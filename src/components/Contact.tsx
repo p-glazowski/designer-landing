@@ -42,7 +42,7 @@ export function Contact() {
         <p className="footer-links">
           <a href="#realizacje">Realizacje</a>
           <a href="#proces">Proces</a>
-          <a href="#materia">Materia</a>
+          <a href="#przed-i-po">Przed i po</a>
           <a href="#kontakt">Kontakt</a>
         </p>
         <p className="footer-legal">© 2026 {brand}</p>

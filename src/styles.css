@@ -147,31 +147,6 @@ button {
   pointer-events: none;
 }
 
-/* ---------- The smeared photograph ---------- */
-
-.smear {
-  position: relative;
-  aspect-ratio: 3 / 4;
-  overflow: hidden;
-  background: var(--surface);
-}
-
-.smear img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: brightness(0.4) saturate(0.7);
-}
-
-.smear canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  cursor: var(--brush);
-  touch-action: pan-y;
-}
-
 /* ---------- Hero ---------- */
 
 .hero {
@@ -494,105 +469,85 @@ button {
   background: rgb(26 21 18 / 0.78);
 }
 
-/* ---------- Moodboard ---------- */
+/* ---------- Before and after ---------- */
 
-.mood {
-  padding: var(--gap) var(--m);
+.change {
+  padding-top: var(--gap);
 }
 
-.mood-field {
-  position: relative;
-  height: max(96svh, 800px);
-  max-width: 1440px;
-  margin: 0 auto;
+.change-head {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 24px;
+  align-items: end;
+  padding: 0 var(--m);
+  margin-bottom: clamp(40px, 5vw, 72px);
 }
 
-.mood-head {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(34vw, 460px);
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-
-.mood-head h2 {
-  font-size: var(--step-lead);
-  font-weight: 400;
-  line-height: 1.08;
-  letter-spacing: -0.03em;
-}
-
-.mood-head p {
-  margin-top: 20px;
-}
-
-.mood-set {
-  color: var(--muted);
-}
-
-.mood-set strong {
-  color: var(--ink);
+.change-head h2 {
+  grid-column: 1 / 9;
+  font-size: var(--step-giant);
   font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
 }
 
-.mood-actions {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
+.change-side {
+  grid-column: 9 / 13;
 }
 
-.link-button {
+.change-toggle {
+  min-height: 44px;
+  margin-top: 8px;
   padding: 0;
   border: 0;
   background: none;
-  color: var(--muted);
+  color: var(--ink);
+  font-weight: 500;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.22em;
   cursor: pointer;
-}
-
-.link-button:hover {
-  color: var(--ink);
-}
-
-.mood-tile {
-  position: absolute;
-  width: clamp(150px, 14vw, 230px);
-}
-
-.mood-tile .smear {
-  aspect-ratio: 9 / 10;
-}
-
-.mood-toggle {
-  display: block;
-  margin-top: 10px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--muted);
-  font-size: var(--step-small);
-  cursor: pointer;
   transition: color 0.18s;
 }
 
-.mood-toggle:hover,
-.mood-toggle[aria-pressed='true'] {
-  color: var(--ink);
+.change-toggle:hover {
+  color: var(--accent);
 }
 
-.mood-toggle[aria-pressed='true'] {
-  font-weight: 500;
+.change-stage {
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--surface);
 }
 
-.t0 { left: 17%; top: 8%; }
-.t1 { left: 42%; top: 0; }
-.t2 { left: 67%; top: 6%; }
-.t3 { left: 15%; top: 56%; }
-.t4 { left: 42%; top: 72%; }
-.t5 { left: 68%; top: 52%; }
+.change-stage img,
+.change-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.change-stage img {
+  object-fit: cover;
+}
+
+.change-after {
+  opacity: 0;
+  transition: opacity 0.7s var(--ease);
+}
+
+.is-finished .change-after {
+  opacity: 1;
+}
+
+.change-stage canvas {
+  cursor: var(--brush);
+  touch-action: pan-y;
+}
 
 /* ---------- Studio ---------- */
 
@@ -855,7 +810,7 @@ button {
 
 /* ---------- Phone ---------- */
 
-/* ---------- Tablet: the index and the moodboard take their phone compositions ---------- */
+/* ---------- Tablet: the index takes its phone composition ---------- */
 
 @media (max-width: 1024px) {
   /* Text above the strips: the two no longer fit side by side. */
@@ -934,38 +889,19 @@ button {
     color: var(--muted);
   }
 
-  .mood-field {
-    height: auto;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-areas:
-      'a b c'
-      'h h h'
-      'd e f';
-    gap: 24px clamp(12px, 3vw, 32px);
+  .change-head {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 24px;
   }
 
-  .mood-head {
-    grid-area: h;
-    position: static;
-    width: auto;
+  .change-head h2,
+  .change-side {
+    grid-column: 1 / -1;
+  }
+
+  .change-side {
     max-width: 34rem;
-    margin: 0 auto;
-    transform: none;
-    padding: 32px 0;
   }
-
-  .mood-tile {
-    position: static;
-    width: auto;
-  }
-
-  .t0 { grid-area: a; }
-  .t1 { grid-area: b; margin-top: 32px; }
-  .t2 { grid-area: c; }
-  .t3 { grid-area: d; }
-  .t4 { grid-area: e; margin-top: 32px; }
-  .t5 { grid-area: f; }
 }
 
 @media (max-width: 760px) {
@@ -1028,8 +964,8 @@ button {
     min-height: 0;
   }
 
-  .mood {
-    padding-bottom: 72px;
+  .change-stage {
+    height: 76svh;
   }
 
   .studio-stage {

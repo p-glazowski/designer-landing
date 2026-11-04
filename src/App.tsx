@@ -4,7 +4,7 @@ import { Hero } from './components/Hero'
 import { Work } from './components/Work'
 import { Statement } from './components/Statement'
 import { Process } from './components/Process'
-import { Moodboard } from './components/Moodboard'
+import { BeforeAfter } from './components/BeforeAfter'
 import { Studio } from './components/Studio'
 import { Contact } from './components/Contact'
 import { initMotion } from './lib/motion'
@@ -32,7 +32,7 @@ export default function App() {
         <Work />
         <Statement />
         <Process />
-        <Moodboard />
+        <BeforeAfter />
         <Studio />
         <Contact />
       </main>
