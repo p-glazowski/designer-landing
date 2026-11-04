@@ -1,29 +1,5 @@
-// Sample content for the demo. Project names, places, years and contact
-// details are placeholders to be replaced with the studio's real work.
-
-export type Project = {
-  name: string
-  kind: string
-  city: string
-  year: number
-  img: string
-  w: number
-  h: number
-  alt: string
-}
-
-export const privateWork: Project[] = [
-  { name: 'Apartament Kamienny', kind: 'Łazienka i strefa dzienna', city: 'Kraków', year: 2025, img: 'work-bath', w: 1400, h: 1400, alt: 'Łazienka z czarnym marmurem, orzechową szafką i okrągłym podświetlanym lustrem' },
-  { name: 'Dom pod Lasem', kind: 'Sypialnie', city: 'Gdańsk', year: 2024, img: 'work-bedroom', w: 1400, h: 1750, alt: 'Sypialnia w półmroku oświetlona dwiema wiszącymi lampami' },
-  { name: 'Kuchnia Grafit', kind: 'Kuchnia', city: 'Poznań', year: 2025, img: 'work-kitchen', w: 1400, h: 2100, alt: 'Grafitowa kuchnia z czarnym kamieniem na blacie i ścianie' },
-]
-
-export const commercialWork: Project[] = [
-  { name: 'Restauracja Sień', kind: 'Restauracja', city: 'Wrocław', year: 2025, img: 'work-restaurant', w: 1400, h: 2100, alt: 'Restauracja z plecioną lampą nad okrągłym stołem i ryflowaną ścianą' },
-  { name: 'Hotel Nadrzecze', kind: 'Recepcja hotelowa', city: 'Kraków', year: 2024, img: 'work-reception', w: 1400, h: 1750, alt: 'Recepcja z czarnego marmuru ze złotą listwą i kulistą lampą' },
-  { name: 'Butik Atłas', kind: 'Butik', city: 'Gdańsk', year: 2026, img: 'work-boutique', w: 1400, h: 2100, alt: 'Wejście do butiku z aksamitną zasłoną i ciepłym światłem kinkietów' },
-  { name: 'Bar Lampa', kind: 'Bar', city: 'Łódź', year: 2024, img: 'work-bar', w: 1400, h: 933, alt: 'Bar wieczorem, ciemne stoły i rząd lamp z kloszami' },
-]
+// Sample content for the demo: contact details and the like are placeholders.
+// The projects live in data.js.
 
 export const steps = [
   {
