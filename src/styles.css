@@ -953,6 +953,11 @@ button {
     font-size: 15vw;
   }
 
+  /* The tall crop has to keep the mug and its steam in frame. */
+  .panel:first-child video {
+    object-position: 74% 50%;
+  }
+
   .panel-text {
     left: var(--m);
     right: var(--m);
