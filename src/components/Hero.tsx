@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { HeroSmear } from '../lib/heroSmear'
 import { prefersReducedMotion } from '../lib/smear'
-import { brand } from '../content'
 
 const rooms = [
   {
@@ -144,20 +143,6 @@ export function Hero({ introDelay }: { introDelay: number }) {
         })}
         <canvas ref={canvasRef} aria-hidden="true" />
       </div>
-
-      <nav className="nav" aria-label="Główna">
-        <a className="wordmark" href="#top" aria-label={`${brand}, na początek strony`}>
-          {brand}
-        </a>
-        <div className="nav-links">
-          <a href="#realizacje">Realizacje</a>
-          <a href="#proces">Proces</a>
-          <a href="#przed-i-po">Przed i po</a>
-          <a className="button" href="#kontakt">
-            Umów konsultację
-          </a>
-        </div>
-      </nav>
 
       <div className="hero-copy" data-reveal>
         <h1 data-part>

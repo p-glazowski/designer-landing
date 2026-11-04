@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Intro } from './components/Intro'
+import { Nav } from './components/Nav'
 import { Hero } from './components/Hero'
 import { Work } from './components/Work'
 import { Statement } from './components/Statement'
@@ -18,6 +19,7 @@ export default function App() {
   return (
     <>
       <Intro />
+      <Nav />
       <Hero introDelay={INTRO_MS} />
       <main>
         <Work />
