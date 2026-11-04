@@ -174,15 +174,26 @@ button {
   height: 100%;
 }
 
-/* Rooms stay stacked in a fixed order and only fade, so a switch never dips to dark and can reverse mid-fade. */
+/* Each new photo fades in over whatever is showing. */
 .hero-stage img {
   object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.7s;
+  animation: room-in 0.9s ease both;
 }
 
-.hero-stage img.is-shown {
-  opacity: 1;
+.hero-stage img.is-base {
+  animation: none;
+}
+
+@keyframes room-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-stage img {
+    animation: none;
+  }
 }
 
 /* Just enough shade under the nav and headline to keep them readable on the room and on the smudges, which it covers. */
