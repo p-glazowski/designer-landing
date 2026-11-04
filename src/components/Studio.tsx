@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { prefersReducedMotion } from '../lib/smear'
+import { withBase } from '../lib/withBase'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -49,7 +50,7 @@ export function Studio() {
     <section className="studio" id="studio" aria-labelledby="studio-title" ref={root}>
       <div className="studio-stage">
         <div className="studio-room">
-          <img className="studio-photo" src="/media/columns.jpg" alt="Kamienne kolumny i ostre smugi cienia między nimi" width={1000} height={750} loading="lazy" decoding="async" />
+          <img className="studio-photo" src={withBase('/media/columns.jpg')} alt="Kamienne kolumny i ostre smugi cienia między nimi" width={1000} height={750} loading="lazy" decoding="async" />
           <span className="studio-scrim" aria-hidden="true" />
           {walls.map((w) => (
             <span className={`studio-wall ${w}`} aria-hidden="true" key={w} />
@@ -88,7 +89,7 @@ export function Studio() {
             <li data-part key={c.name}>
               <figure>
                 <div className="studio-strip">
-                  <img data-zoom src={`/media/${c.src}.jpg`} alt={c.alt} width={c.w} height={c.h} loading="lazy" decoding="async" />
+                  <img data-zoom src={withBase(`/media/${c.src}.jpg`)} alt={c.alt} width={c.w} height={c.h} loading="lazy" decoding="async" />
                 </div>
                 <figcaption>{c.name}</figcaption>
               </figure>

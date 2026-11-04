@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { categories, projects } from '../data'
 import { refreshScroll } from '../lib/motion'
 import { Contact } from './Contact'
+import { withBase } from '../lib/withBase'
 
 const filters = [
   { id: 'wszystkie', label: 'Wszystkie', match: () => true },
@@ -52,7 +53,7 @@ export function Projects() {
         <ul className="projects-wall">
           {shown.map((p) => (
             <li className="project-card" key={p.slug} data-reveal>
-              <a href={`/realizacje/${p.slug}`}>
+              <a href={withBase(`/realizacje/${p.slug}`)}>
                 <span className="project-card-photo">
                   <img src={p.cover.src} alt={p.cover.alt} width={p.cover.w} height={p.cover.h} style={{ objectPosition: p.cover.focus }} loading="lazy" decoding="async" />
                 </span>

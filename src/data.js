@@ -5,6 +5,8 @@
 // Sample content for the demo. Names, places, numbers and texts are placeholders,
 // and the galleries share stock photos until the studio's real work replaces them.
 
+import { withBase } from './lib/withBase'
+
 /**
  * @typedef {object} Photo
  * @property {string} src
@@ -47,32 +49,32 @@
  */
 
 const media = {
-  bathRoom: { src: '/media/hero-private.jpg', w: 2400, h: 1500, alt: 'Łazienka z czarnym marmurem, orzechową zabudową i okrągłym podświetlanym lustrem' },
-  bathMirror: { src: '/media/work-bath.jpg', w: 1400, h: 1400, alt: 'Łazienka z czarnym marmurem, orzechową szafką i okrągłym podświetlanym lustrem' },
-  bathDark: { src: '/media/bath-poster.jpg', w: 1280, h: 720, alt: 'Ukończona łazienka w ciemnym kamieniu widziana zza uchylonych drzwi' },
-  bathAfter: { src: '/media/bath-after.webp', w: 1448, h: 1086, alt: 'Jasna łazienka z trawertynem, podświetlaną półką i kabiną prysznicową' },
-  bathBefore: { src: '/media/bath-before.webp', w: 1448, h: 1086, alt: 'Ta sama łazienka przed remontem: surowe betonowe ściany i okno' },
-  shower: { src: '/media/mat-travertine.jpg', w: 700, h: 1050, alt: 'Kabina prysznicowa wyłożona jasnym kamieniem z czarną deszczownicą' },
-  marble: { src: '/media/mat-marble.jpg', w: 700, h: 1050, alt: 'Czarny marmur z jasnym użyleniem i złotą listwą' },
-  walnut: { src: '/media/mat-walnut.jpg', w: 700, h: 467, alt: 'Ciemne orzechowe lamele' },
-  velvet: { src: '/media/mat-velvet.jpg', w: 700, h: 526, alt: 'Bordowa aksamitna zasłona w fałdach' },
-  glass: { src: '/media/mat-glass.jpg', w: 700, h: 1050, alt: 'Ściana z bursztynowych szklanych pustaków podświetlona od tyłu' },
-  chrome: { src: '/media/mat-chrome.jpg', w: 700, h: 394, alt: 'Płynne, splecione formy z polerowanego chromu' },
-  silk: { src: '/media/silk-poster.jpg', w: 1280, h: 2428, alt: 'Czarna jedwabna tkanina falująca w świetle' },
-  bedroom: { src: '/media/work-bedroom.jpg', w: 1400, h: 1750, alt: 'Sypialnia w półmroku oświetlona dwiema wiszącymi lampami' },
-  stair: { src: '/media/stair.jpg', w: 1000, h: 667, alt: 'Kręte schody w mroku, światło wpada przez wąskie szczeliny w ścianie' },
-  armchair: { src: '/media/step-talk.jpg', w: 2000, h: 2761, alt: 'Ciemny fotel i mały stolik w przygaszonym świetle' },
-  kitchen: { src: '/media/work-kitchen.jpg', w: 1400, h: 2100, alt: 'Grafitowa kuchnia z czarnym kamieniem na blacie i ścianie' },
-  cup: { src: '/media/talk-poster.jpg', w: 1280, h: 720, alt: 'Ciemny kubek kawy na stole przy oknie' },
-  samples: { src: '/media/studio.jpg', w: 600, h: 436, alt: 'Próbki materiałów rozłożone na stole w pracowni' },
-  drawing: { src: '/media/step-sketch.jpg', w: 2000, h: 1125, alt: 'Projektant rysujący plan na rozłożonym arkuszu' },
-  sketch: { src: '/media/sketch-poster.jpg', w: 1280, h: 675, alt: 'Dłoń kreśląca ostre, ciemne linie na papierze' },
-  restaurant: { src: '/media/work-restaurant.jpg', w: 1400, h: 2100, alt: 'Restauracja z plecioną lampą nad okrągłym stołem i ryflowaną ścianą' },
-  columns: { src: '/media/columns.jpg', w: 1000, h: 750, alt: 'Kamienne kolumny i ostre smugi cienia między nimi' },
-  lobby: { src: '/media/hero-commercial.jpg', w: 2400, h: 1500, alt: 'Lobby z trawertynowymi ścianami, sufitem z drewnianych lameli i recepcją z ciemnego marmuru' },
-  reception: { src: '/media/work-reception.jpg', w: 1400, h: 1750, alt: 'Recepcja z czarnego marmuru ze złotą listwą i kulistą lampą' },
-  boutique: { src: '/media/work-boutique.jpg', w: 1400, h: 2100, alt: 'Wejście do butiku z aksamitną zasłoną i ciepłym światłem kinkietów' },
-  bar: { src: '/media/work-bar.jpg', w: 1400, h: 933, alt: 'Bar wieczorem, ciemne stoły i rząd lamp z kloszami' },
+  bathRoom: { src: withBase('/media/hero-private.jpg'), w: 2400, h: 1500, alt: 'Łazienka z czarnym marmurem, orzechową zabudową i okrągłym podświetlanym lustrem' },
+  bathMirror: { src: withBase('/media/work-bath.jpg'), w: 1400, h: 1400, alt: 'Łazienka z czarnym marmurem, orzechową szafką i okrągłym podświetlanym lustrem' },
+  bathDark: { src: withBase('/media/bath-poster.jpg'), w: 1280, h: 720, alt: 'Ukończona łazienka w ciemnym kamieniu widziana zza uchylonych drzwi' },
+  bathAfter: { src: withBase('/media/bath-after.webp'), w: 1448, h: 1086, alt: 'Jasna łazienka z trawertynem, podświetlaną półką i kabiną prysznicową' },
+  bathBefore: { src: withBase('/media/bath-before.webp'), w: 1448, h: 1086, alt: 'Ta sama łazienka przed remontem: surowe betonowe ściany i okno' },
+  shower: { src: withBase('/media/mat-travertine.jpg'), w: 700, h: 1050, alt: 'Kabina prysznicowa wyłożona jasnym kamieniem z czarną deszczownicą' },
+  marble: { src: withBase('/media/mat-marble.jpg'), w: 700, h: 1050, alt: 'Czarny marmur z jasnym użyleniem i złotą listwą' },
+  walnut: { src: withBase('/media/mat-walnut.jpg'), w: 700, h: 467, alt: 'Ciemne orzechowe lamele' },
+  velvet: { src: withBase('/media/mat-velvet.jpg'), w: 700, h: 526, alt: 'Bordowa aksamitna zasłona w fałdach' },
+  glass: { src: withBase('/media/mat-glass.jpg'), w: 700, h: 1050, alt: 'Ściana z bursztynowych szklanych pustaków podświetlona od tyłu' },
+  chrome: { src: withBase('/media/mat-chrome.jpg'), w: 700, h: 394, alt: 'Płynne, splecione formy z polerowanego chromu' },
+  silk: { src: withBase('/media/silk-poster.jpg'), w: 1280, h: 2428, alt: 'Czarna jedwabna tkanina falująca w świetle' },
+  bedroom: { src: withBase('/media/work-bedroom.jpg'), w: 1400, h: 1750, alt: 'Sypialnia w półmroku oświetlona dwiema wiszącymi lampami' },
+  stair: { src: withBase('/media/stair.jpg'), w: 1000, h: 667, alt: 'Kręte schody w mroku, światło wpada przez wąskie szczeliny w ścianie' },
+  armchair: { src: withBase('/media/step-talk.jpg'), w: 2000, h: 2761, alt: 'Ciemny fotel i mały stolik w przygaszonym świetle' },
+  kitchen: { src: withBase('/media/work-kitchen.jpg'), w: 1400, h: 2100, alt: 'Grafitowa kuchnia z czarnym kamieniem na blacie i ścianie' },
+  cup: { src: withBase('/media/talk-poster.jpg'), w: 1280, h: 720, alt: 'Ciemny kubek kawy na stole przy oknie' },
+  samples: { src: withBase('/media/studio.jpg'), w: 600, h: 436, alt: 'Próbki materiałów rozłożone na stole w pracowni' },
+  drawing: { src: withBase('/media/step-sketch.jpg'), w: 2000, h: 1125, alt: 'Projektant rysujący plan na rozłożonym arkuszu' },
+  sketch: { src: withBase('/media/sketch-poster.jpg'), w: 1280, h: 675, alt: 'Dłoń kreśląca ostre, ciemne linie na papierze' },
+  restaurant: { src: withBase('/media/work-restaurant.jpg'), w: 1400, h: 2100, alt: 'Restauracja z plecioną lampą nad okrągłym stołem i ryflowaną ścianą' },
+  columns: { src: withBase('/media/columns.jpg'), w: 1000, h: 750, alt: 'Kamienne kolumny i ostre smugi cienia między nimi' },
+  lobby: { src: withBase('/media/hero-commercial.jpg'), w: 2400, h: 1500, alt: 'Lobby z trawertynowymi ścianami, sufitem z drewnianych lameli i recepcją z ciemnego marmuru' },
+  reception: { src: withBase('/media/work-reception.jpg'), w: 1400, h: 1750, alt: 'Recepcja z czarnego marmuru ze złotą listwą i kulistą lampą' },
+  boutique: { src: withBase('/media/work-boutique.jpg'), w: 1400, h: 2100, alt: 'Wejście do butiku z aksamitną zasłoną i ciepłym światłem kinkietów' },
+  bar: { src: withBase('/media/work-bar.jpg'), w: 1400, h: 933, alt: 'Bar wieczorem, ciemne stoły i rząd lamp z kloszami' },
 }
 
 /** @type {Project[]} */

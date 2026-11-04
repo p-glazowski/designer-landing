@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { brand } from '../content'
 import { stopScroll } from '../lib/motion'
 import { useRoute } from '../lib/router'
+import { withBase } from '../lib/withBase'
 
 const links = [
   { href: '/realizacje', label: 'Realizacje' },
@@ -97,13 +98,13 @@ export function Nav() {
 
   return (
     <nav className={classes} aria-label="Główna">
-      <a className="wordmark" href="/#top" aria-label={`${brand}, na początek strony głównej`}>
+      <a className="wordmark" href={withBase('/#top')} aria-label={`${brand}, na początek strony głównej`}>
         {brand}
       </a>
 
       <div className="nav-links">
         {links.map(({ href, id, label }) => (
-          <a key={href} href={href} aria-current={ariaCurrent(href, id)}>
+          <a key={href} href={withBase(href)} aria-current={ariaCurrent(href, id)}>
             {label}
           </a>
         ))}
@@ -118,7 +119,7 @@ export function Nav() {
 
       <dialog className="nav-menu" ref={menuRef} aria-label="Menu" onClose={() => stopScroll(false)}>
         <div className="nav-menu-top">
-          <a className="wordmark" href="/#top" onClick={closeMenu}>
+          <a className="wordmark" href={withBase('/#top')} onClick={closeMenu}>
             {brand}
           </a>
           <button className="nav-toggle" type="button" onClick={closeMenu}>
@@ -128,7 +129,7 @@ export function Nav() {
         <ul className="nav-menu-links">
           {links.map(({ href, label }) => (
             <li key={href}>
-              <a href={href} onClick={closeMenu}>
+              <a href={withBase(href)} onClick={closeMenu}>
                 {label}
               </a>
             </li>

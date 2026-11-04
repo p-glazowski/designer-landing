@@ -16,3 +16,9 @@ npm run dev
 ```
 
 Projects are in `src/data.js`, which feeds the home section and the pages at `/realizacje` and `/realizacje/<slug>`. Because those are real addresses, the host has to serve `index.html` for any path. Other placeholder text lives in `src/content.ts`. Photos and clips are free stock from Unsplash and Pexels, kept in `public/media` and credited in the footer.
+
+To publish the current checkout to GitHub Pages (https://p-glazowski.github.io/designer-landing/):
+
+```bash
+npm run deploy
+```

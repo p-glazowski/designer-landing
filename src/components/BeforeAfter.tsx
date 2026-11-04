@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { BeforeAfterSmear } from '../lib/beforeAfter'
 import { prefersReducedMotion } from '../lib/smear'
+import { withBase } from '../lib/withBase'
 
 /**
  * The live thing: one bathroom on the day of handover, in bare concrete. Smudges
@@ -81,11 +82,11 @@ export function BeforeAfter() {
       </div>
 
       <div className={`change-stage${finished ? ' is-finished' : ''}`}>
-        <img ref={beforeRef} src="/media/bath-before.webp" alt="Łazienka przed realizacją: surowe betonowe ściany, wyprowadzone rury i okno" width={1448} height={1086} loading="lazy" decoding="async" />
+        <img ref={beforeRef} src={withBase('/media/bath-before.webp')} alt="Łazienka przed realizacją: surowe betonowe ściany, wyprowadzone rury i okno" width={1448} height={1086} loading="lazy" decoding="async" />
         <img
           ref={afterRef}
           className="change-after"
-          src="/media/bath-after.webp"
+          src={withBase('/media/bath-after.webp')}
           alt="Ta sama łazienka po realizacji: beżowy marmur, podświetlane lustro, orzechowa szafka i złota armatura"
           width={1448}
           height={1086}
