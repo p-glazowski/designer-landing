@@ -1,24 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { bristle, prefersReducedMotion, seeded } from '../lib/smear'
 
-const KEY = 'intro-seen'
-
-function alreadySeen() {
-  try {
-    return sessionStorage.getItem(KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-function markSeen() {
-  try {
-    sessionStorage.setItem(KEY, '1')
-  } catch {
-    /* private mode: the intro simply plays again */
-  }
-}
-
 const css = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 const ease = (t: number) => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3)
 
@@ -27,14 +9,13 @@ const ease = (t: number) => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3)
  * word "ślad" (a trace) is left in it; then the brush wipes the darkness away.
  */
 export function Intro() {
-  const [show, setShow] = useState(() => !prefersReducedMotion() && !alreadySeen())
+  const [show, setShow] = useState(() => !prefersReducedMotion())
   const [leaving, setLeaving] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const finishRef = useRef<() => void>(() => {})
 
   useEffect(() => {
     if (!show) return
-    markSeen()
     const canvas = canvasRef.current!
     const ctx = canvas.getContext('2d')!
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -69,7 +50,7 @@ export function Intro() {
     const wipes = Array.from({ length: 6 }, (_, i) => ({
       y: (H / 5) * i - H * 0.05,
       tilt: (randWipe() - 0.5) * H * 0.18,
-      delay: i * 0.07,
+      delay: i * 0.09,
     }))
     const wipeDone = wipes.map(() => -W * 0.15)
 
@@ -89,7 +70,7 @@ export function Intro() {
 
       // Act one: the stroke is laid down, left to right, with the word inside it.
       // The stroke builds up on its own layer so the word is never painted over.
-      const p = ease(t / 0.85)
+      const p = ease(t / 1.4)
       const target = x0 + (x1 - x0) * p
       if (!actOneDone) {
         if (target > paintedTo + 0.5) {
@@ -127,13 +108,13 @@ export function Intro() {
         if (p >= 1) actOneDone = true
       }
 
-      // Act two: broad strokes wipe the dark away to open the page.
-      const w = t - 1.05
+      // Act two: after a moment to read the word, broad strokes wipe the dark away to open the page.
+      const w = t - 2
       if (w > 0) {
         ctx.globalCompositeOperation = 'destination-out'
         ctx.strokeStyle = '#000'
         wipes.forEach((s, i) => {
-          const q = ease((w - s.delay) / 0.6)
+          const q = ease((w - s.delay) / 0.85)
           const to = -W * 0.15 + q * W * 1.3
           if (to <= wipeDone[i]) return
           const from = wipeDone[i]
@@ -144,7 +125,7 @@ export function Intro() {
         ctx.globalCompositeOperation = 'source-over'
       }
 
-      if (t > 1.95) finish()
+      if (t > 3.3) finish()
       else raf = requestAnimationFrame(frame)
     }
 

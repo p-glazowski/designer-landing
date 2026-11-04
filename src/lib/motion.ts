@@ -68,6 +68,8 @@ export function initMotion() {
         duration: 1.1,
         ease: 'power3.out',
         stagger: 0.08,
+        // The hero's copy rises as the welcome wipes away, not behind it.
+        delay: group.closest('.hero') ? 1 : 0,
         scrollTrigger: { trigger: group, start: 'top 82%', once: true },
       })
     })

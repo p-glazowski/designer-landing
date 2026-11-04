@@ -84,10 +84,12 @@ export function Hero({ introDelay }: { introDelay: number }) {
   useEffect(() => {
     if (prefersReducedMotion()) return
     const timer = window.setInterval(() => {
+      // The first photo gets its full turn once the welcome has opened onto it.
+      if (performance.now() < introDelay + CYCLE - 500) return
       if (onScreen.current && !document.hidden) advance(active)
     }, CYCLE)
     return () => window.clearInterval(timer)
-  }, [active, advance])
+  }, [active, advance, introDelay])
 
   useEffect(() => {
     // With reduced motion the room simply stays still and clean.
