@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { brand, credits } from '../content'
+import { brand, contact, credits } from '../content'
 
 /** Where a word's visible ink really sits, as shares of the font size: the blank before it and the drop below the baseline. */
 function measureInk(word: string, style: CSSStyleDeclaration) {
@@ -51,7 +51,7 @@ function FooterName() {
   )
 }
 
-/** A visit card laid on a photograph, then the page closes on the studio's name, full width. */
+/** A contact card laid on a photograph, then the page closes on the studio's name, full width. The form is for show: sending does nothing yet. */
 export function Contact() {
   return (
     <>
@@ -63,28 +63,31 @@ export function Contact() {
           <h2 id="contact-title" data-part>
             Umów konsultację
           </h2>
-          <p data-part>
-            Projekty w całej Polsce
-            <br />
-            W pracowni lub u Ciebie, na miejscu
-          </p>
-          <dl data-part>
-            <div>
-              <dt>Poniedziałek–piątek</dt>
-              <dd>9:00–17:00</dd>
+          <p data-part>Projekty w całej Polsce, w pracowni lub u Ciebie na miejscu.</p>
+          <div className="card-direct" data-part>
+            <a className="card-phone" href={`tel:${contact.phone.replace(/\s/g, '')}`}>
+              {contact.phone}
+            </a>
+            <p>Poniedziałek–piątek, 9:00–17:00</p>
+            <a href={`mailto:${contact.email}`}>{contact.email}</a>
+          </div>
+          <form className="card-form" onSubmit={(e) => e.preventDefault()}>
+            <div className="card-field" data-part>
+              <label htmlFor="contact-name">Imię</label>
+              <input id="contact-name" name="name" type="text" autoComplete="name" />
             </div>
-            <div>
-              <dt>Sobota</dt>
-              <dd>po umówieniu</dd>
+            <div className="card-field" data-part>
+              <label htmlFor="contact-email">E-mail</label>
+              <input id="contact-email" name="email" type="email" autoComplete="email" />
             </div>
-            <div>
-              <dt>Niedziela</dt>
-              <dd>nieczynne</dd>
+            <div className="card-field" data-part>
+              <label htmlFor="contact-message">Wiadomość</label>
+              <textarea id="contact-message" name="message" rows={3} data-lenis-prevent />
             </div>
-          </dl>
-          <button type="button" className="button card-button" data-part>
-            Napisz do nas
-          </button>
+            <button type="submit" className="button card-button" data-part>
+              Wyślij wiadomość
+            </button>
+          </form>
         </div>
       </section>
 

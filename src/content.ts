@@ -78,3 +78,9 @@ export const credits = [
 
 /** Placeholder studio name, shown in the wordmark, the about text and the footer. */
 export const brand = 'Pracownia'
+
+/** Placeholder details for the demo. Neither reaches anyone: no Polish number starts with 0, and .example is a reserved domain. */
+export const contact = {
+  phone: '+48 000 000 000',
+  email: 'kontakt@pracownia.example',
+}
