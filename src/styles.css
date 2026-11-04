@@ -755,17 +755,6 @@ button {
   margin-top: 12px;
 }
 
-.studio-facts {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
-  margin-top: clamp(72px, 10vw, 160px);
-  font-size: var(--step-lead);
-  line-height: 1.16;
-  letter-spacing: -0.02em;
-}
-
 /* ---------- Contact ---------- */
 
 .contact {
@@ -898,8 +887,7 @@ button {
   }
 
   .studio-text,
-  .studio-crafts,
-  .studio-facts {
+  .studio-crafts {
     grid-column: 1 / -1;
   }
 
@@ -1079,12 +1067,6 @@ button {
   .studio-crafts {
     gap: 8px;
     height: 112vw;
-  }
-
-  .studio-facts {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
-    margin-top: 72px;
   }
 
   .contact {

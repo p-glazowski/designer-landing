@@ -99,12 +99,6 @@ export function Studio() {
             </li>
           ))}
         </ul>
-
-        <ul className="studio-facts" data-reveal>
-          <li data-part>Projekty w całej Polsce</li>
-          <li data-part>Od koncepcji po realizację</li>
-          <li data-part>Spotkania po umówieniu</li>
-        </ul>
       </div>
     </section>
   )
