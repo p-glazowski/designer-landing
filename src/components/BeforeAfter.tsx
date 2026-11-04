@@ -3,14 +3,18 @@ import { BeforeAfterSmear } from '../lib/beforeAfter'
 import { prefersReducedMotion } from '../lib/smear'
 
 /**
- * The live thing: one bathroom on the day of handover, in bare concrete. A smudge
- * follows the cursor and shows the same room finished, only where it passes.
+ * The live thing: one bathroom on the day of handover, in bare concrete. Smudges
+ * wander across it and one follows the cursor, showing the same room finished
+ * only where they pass.
  */
 export function BeforeAfter() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const beforeRef = useRef<HTMLImageElement>(null)
   const afterRef = useRef<HTMLImageElement>(null)
+  const smear = useRef<BeforeAfterSmear | null>(null)
   const [finished, setFinished] = useState(false)
+  const showingFinished = useRef(false)
+  showingFinished.current = finished
 
   useEffect(() => {
     if (prefersReducedMotion()) return
@@ -18,6 +22,7 @@ export function BeforeAfter() {
     const before = beforeRef.current!
     const after = afterRef.current!
     const s = new BeforeAfterSmear(canvas, before, after)
+    smear.current = s
     let gone = false
 
     const move = (e: PointerEvent) => s.point({ x: e.clientX, y: e.clientY })
@@ -34,7 +39,7 @@ export function BeforeAfter() {
         seen.disconnect()
         Promise.all([before.decode(), after.decode()])
           .then(() => {
-            if (!gone) s.demo(2600)
+            if (!gone) s.setAmbient(!showingFinished.current)
           })
           .catch(() => {})
       },
@@ -44,6 +49,7 @@ export function BeforeAfter() {
 
     return () => {
       gone = true
+      smear.current = null
       seen.disconnect()
       s.destroy()
       canvas.removeEventListener('pointerenter', move)
@@ -54,6 +60,12 @@ export function BeforeAfter() {
     }
   }, [])
 
+  // Nothing to uncover once the whole finished room is showing.
+  const toggle = () => {
+    smear.current?.setAmbient(finished)
+    setFinished(!finished)
+  }
+
   return (
     <section className="change" id="przed-i-po" aria-labelledby="change-title" tabIndex={-1}>
       <div className="change-head" data-reveal>
@@ -62,7 +74,7 @@ export function BeforeAfter() {
         </h2>
         <div className="change-side" data-part>
           <p>Ta sama łazienka w dniu odbioru i w dniu oddania kluczy. Przesuń po zdjęciu, a beton ustąpi wnętrzu.</p>
-          <button type="button" className="change-toggle" onClick={() => setFinished((f) => !f)}>
+          <button type="button" className="change-toggle" onClick={toggle}>
             {finished ? 'Pokaż surowy beton' : 'Pokaż gotowe wnętrze'}
           </button>
         </div>
