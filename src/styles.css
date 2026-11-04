@@ -891,6 +891,8 @@ html:has(.nav-menu[open]) {
   height: calc(var(--svh) * 100);
   min-height: 800px;
   overflow: hidden;
+  /* On a screen shorter than the section, links land lower so the send button shows, while the heading clears the nav. */
+  scroll-margin-top: clamp(-56px, calc(var(--svh) * 100 - 800px), 0px);
 }
 
 .contact-photo {
@@ -1041,6 +1043,8 @@ html:has(.nav-menu[open]) {
     height: auto;
     min-height: 0;
     overflow: visible;
+    /* Links land past the photo, on the words and the form, with the heading clear of the nav. */
+    scroll-margin-top: calc(var(--svh) * -70 - 48px + 80px);
   }
 
   .contact-photo {
