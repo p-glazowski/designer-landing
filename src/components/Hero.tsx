@@ -29,7 +29,7 @@ const rooms = [
 ]
 
 /** How often the chosen interior moves on to its next photo, in ms. */
-const CYCLE = 3000
+const CYCLE = 4000
 
 /**
  * The room fills the screen, bright and whole, and rose paint is smeared across it:

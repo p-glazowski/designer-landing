@@ -251,7 +251,7 @@ export class HeroSmear {
 
     if (this.auto && now >= this.nextAuto) {
       if (this.strokes.filter((s) => s.auto).length < MAX_AUTO) this.spawnAuto(now)
-      this.nextAuto = now + between(800, 1700)
+      this.nextAuto = now + between(1300, 2400)
     }
     for (const s of this.strokes) if (s.auto && s.open) this.advanceAuto(s, now)
     this.advanceBrush(dt, now)
