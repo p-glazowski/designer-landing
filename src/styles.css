@@ -12,6 +12,8 @@
   --accent-ink: #1a1512;
   --field-1: #c8c0b5;
   --field-1-ink: #1a1512;
+  --logo-taupe: #5d4841;
+  --logo-pink: #fec7c8;
 
   --font: 'Switzer', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
@@ -174,22 +176,45 @@ button {
   height: 100%;
 }
 
+/* Each new photo fades in over whatever is showing. */
 .hero-stage img {
   object-fit: cover;
-  filter: brightness(0.07) saturate(0.6);
-  opacity: 0;
-  transition: opacity 0.7s;
+  animation: room-in 0.9s ease both;
 }
 
-.hero-stage img.is-active {
-  opacity: 1;
+.hero-stage img.is-base {
+  animation: none;
 }
 
-@media (max-aspect-ratio: 1/1) {
-  .hero-stage img {
-    transform: scale(1.35);
-    transform-origin: 50% 100%;
+@keyframes room-in {
+  from {
+    opacity: 0;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-stage img {
+    animation: none;
+  }
+}
+
+/* Just enough shade under the nav and headline to keep them readable on the room and on the smudges, which it covers. */
+.hero-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgb(0 0 0 / 0.5), transparent 22%),
+    linear-gradient(to top, rgb(0 0 0 / 0.72), rgb(0 0 0 / 0.3) 30%, transparent 58%);
+}
+
+/* A touch of blur takes the digital edge off the ribbons; the canvas overhangs so it doesn't fade out at the screen's edge. */
+.hero-stage canvas {
+  inset: -12px;
+  width: calc(100% + 24px);
+  height: calc(100% + 24px);
+  filter: blur(1px);
+  pointer-events: none;
 }
 
 .nav {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Intro } from './components/Intro'
 import { Hero } from './components/Hero'
 import { Work } from './components/Work'
@@ -8,26 +8,17 @@ import { BeforeAfter } from './components/BeforeAfter'
 import { Studio } from './components/Studio'
 import { Contact } from './components/Contact'
 import { initMotion } from './lib/motion'
-import { prefersReducedMotion } from './lib/smear'
 
-function introWillPlay() {
-  try {
-    return !prefersReducedMotion() && sessionStorage.getItem('intro-seen') !== '1'
-  } catch {
-    return !prefersReducedMotion()
-  }
-}
+/** How long the welcome takes to open onto the hero, in ms. */
+const INTRO_MS = 3500
 
 export default function App() {
-  // Read once, before the intro marks itself as seen.
-  const [introDelay] = useState(() => (introWillPlay() ? 2200 : 500))
-
   useEffect(() => initMotion(), [])
 
   return (
     <>
       <Intro />
-      <Hero introDelay={introDelay} />
+      <Hero introDelay={INTRO_MS} />
       <main>
         <Work />
         <Statement />
