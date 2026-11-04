@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { steps } from '../content'
 import { prefersReducedMotion } from '../lib/smear'
 
-/** Four full-screen panels; each stage's word holds the centre while its picture passes. */
+/** Four full-screen panels; each stage's word holds the centre while its film plays. */
 export function Process() {
   const root = useRef<HTMLElement>(null)
 
@@ -28,20 +28,16 @@ export function Process() {
       {steps.map((s) => (
         <article className="panel" key={s.word}>
           <div className="panel-media">
-            {s.media.type === 'img' ? (
-              <img data-zoom src={`/media/${s.media.src}.jpg`} alt={s.media.alt} width={2000} height={1333} loading="lazy" decoding="async" />
-            ) : (
-              <video
-                data-zoom
-                src={`/media/${s.media.src}.mp4`}
-                poster={`/media/${s.media.src}-poster.jpg`}
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                aria-label={s.media.alt}
-              />
-            )}
+            <video
+              data-zoom
+              src={`/media/${s.media.src}.mp4`}
+              poster={`/media/${s.media.src}-poster.jpg`}
+              muted
+              loop
+              playsInline
+              preload="none"
+              aria-label={s.media.alt}
+            />
           </div>
           <div className="panel-word">
             <h2>{s.word}</h2>

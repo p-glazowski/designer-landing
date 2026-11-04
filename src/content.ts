@@ -29,22 +29,22 @@ export const steps = [
   {
     word: 'Rozmowa',
     text: 'Zaczynamy od spotkania: jak mieszkasz, pracujesz i przyjmujesz gości. Słuchamy dłużej, niż mówimy.',
-    media: { type: 'img' as const, src: 'step-talk', alt: 'Zielony aksamitny fotel, filiżanka kawy i notes w półmroku' },
+    media: { src: 'talk', alt: 'Para unosząca się nad ciemnym kubkiem kawy przy oknie' },
   },
   {
     word: 'Szkic',
     text: 'Układ funkcjonalny, rzuty i wizualizacje. Każdą ścianę rysujemy, zanim ktokolwiek po nią sięgnie.',
-    media: { type: 'img' as const, src: 'step-sketch', alt: 'Dłoń z ołówkiem nad rysunkiem technicznym i linijką' },
+    media: { src: 'sketch', alt: 'Dłoń kreśląca ostre, ciemne linie na papierze' },
   },
   {
     word: 'Materia',
     text: 'Kamień, drewno i tkaniny na jednym stole. Wybieramy dotykiem, nie z katalogu.',
-    media: { type: 'video' as const, src: 'silk', alt: 'Czarna jedwabna tkanina falująca w świetle' },
+    media: { src: 'silk', alt: 'Czarna jedwabna tkanina falująca w świetle' },
   },
   {
     word: 'Realizacja',
     text: 'Nadzór autorski na budowie aż do ostatniej lampy. Oddajemy klucze do skończonego wnętrza.',
-    media: { type: 'video' as const, src: 'bath', alt: 'Ujęcie ukończonej łazienki w ciemnym kamieniu' },
+    media: { src: 'bath', alt: 'Ujęcie ukończonej łazienki w ciemnym kamieniu' },
   },
 ]
 
@@ -72,6 +72,8 @@ export const credits = [
   ['Alessandro Guarino', 'Unsplash'],
   ['Hanna Pad', 'Pexels'],
   ['Arsel Ozgurdal', 'Pexels'],
+  ['Life of Pix', 'Pexels'],
+  ['Ron Lach', 'Pexels'],
 ] as const
 
 /** Placeholder studio name, shown in the wordmark, the about text and the footer. */
