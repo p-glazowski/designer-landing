@@ -1,6 +1,6 @@
 import type { Pt } from './smear'
 
-// The hero's room is shown whole, and black ink is smeared across it: the cursor
+// The hero's room is shown whole, and rose paint is smeared across it: the cursor
 // drags a long smooth smudge, and others sweep through on their own. Every smudge
 // is the same thing, a line of points that each thin away a fixed time after they
 // were laid, so a stroke draws itself forward and retracts from its tail.
@@ -38,6 +38,7 @@ function bezier(s: NonNullable<Stroke['auto']>, u: number): Pt {
 export class HeroSmear {
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
+  private color: string
   private layer = document.createElement('canvas')
   private lx = this.layer.getContext('2d')!
   private w = 0
@@ -60,6 +61,7 @@ export class HeroSmear {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')!
+    this.color = getComputedStyle(canvas).getPropertyValue('--accent').trim()
     this.ro = new ResizeObserver(() => this.resize())
     this.ro.observe(canvas)
     this.io = new IntersectionObserver(([e]) => {
@@ -91,7 +93,7 @@ export class HeroSmear {
   }
 
   private get baseWidth() {
-    return Math.min(this.w, this.h) * 0.1
+    return Math.min(this.w, this.h) * 0.055
   }
 
   /** Begin the smudges that sweep through on their own. */
@@ -107,7 +109,7 @@ export class HeroSmear {
     this.target = p
     this.brush = { ...p }
     this.brushWidth = this.baseWidth
-    this.current = { points: [], life: 2600, travelled: 0, open: true }
+    this.current = { points: [], life: 1800, travelled: 0, open: true }
     this.strokes.push(this.current)
     this.wake()
   }
@@ -146,7 +148,7 @@ export class HeroSmear {
     const c2Bend = Math.random() < 0.6 ? bend : -bend
     this.strokes.push({
       points: [],
-      life: between(1700, 2700),
+      life: between(1200, 1900),
       travelled: 0,
       open: true,
       auto: {
@@ -154,7 +156,7 @@ export class HeroSmear {
         c1: at(-0.17, bend),
         c2: at(0.17, c2Bend),
         to: at(0.5, 0),
-        width: Math.min(this.w, this.h) * between(0.06, 0.15),
+        width: Math.min(this.w, this.h) * between(0.03, 0.08),
         start: now,
         ms: between(1300, 2200),
         u: 0,
@@ -202,7 +204,7 @@ export class HeroSmear {
     const x = this.lx
     x.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
     x.clearRect(0, 0, this.w, this.h)
-    x.strokeStyle = '#000'
+    x.strokeStyle = this.color
     x.lineCap = 'round'
     x.lineJoin = 'round'
     for (const s of this.strokes) {
@@ -228,12 +230,12 @@ export class HeroSmear {
     const { ctx, w, h } = this
     if (!w || !h) return
     ctx.clearRect(0, 0, w, h)
-    // Ink at full width first and thin, then a denser heart: the edge of the smudge lets the room through.
+    // Paint at full width first and thin, then a denser heart: the room stays visible through the smudge.
     this.draw(now, 1)
-    ctx.globalAlpha = 0.55
+    ctx.globalAlpha = 0.4
     ctx.drawImage(this.layer, 0, 0, w, h)
-    this.draw(now, 0.74)
-    ctx.globalAlpha = 0.96
+    this.draw(now, 0.7)
+    ctx.globalAlpha = 0.75
     ctx.drawImage(this.layer, 0, 0, w, h)
     ctx.globalAlpha = 1
   }

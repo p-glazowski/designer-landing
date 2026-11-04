@@ -185,24 +185,22 @@ button {
   opacity: 1;
 }
 
-/* Just enough shade under the nav and headline to keep them readable on a bright room. */
+/* Just enough shade under the nav and headline to keep them readable on the room and on the smudges, which it covers. */
 .hero-stage::after {
   content: '';
   position: absolute;
   inset: 0;
-  z-index: 1;
   background:
     linear-gradient(to bottom, rgb(0 0 0 / 0.5), transparent 22%),
     linear-gradient(to top, rgb(0 0 0 / 0.72), rgb(0 0 0 / 0.3) 30%, transparent 58%);
 }
 
-/* The blur softens the ink's edge; the canvas overhangs so it never shows a clean cut at the screen's edge. */
+/* The blur softens the paint's edge; the canvas overhangs so it never shows a clean cut at the screen's edge. */
 .hero-stage canvas {
   inset: -12px;
-  z-index: 2;
   width: calc(100% + 24px);
   height: calc(100% + 24px);
-  filter: blur(4px);
+  filter: blur(3px);
   pointer-events: none;
 }
 

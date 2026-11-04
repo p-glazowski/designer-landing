@@ -21,7 +21,7 @@ const rooms = [
 ]
 
 /**
- * The room fills the screen, bright and whole, and black ink is smeared across it:
+ * The room fills the screen, bright and whole, and rose paint is smeared across it:
  * the cursor drags a long smooth smudge, and others sweep through on their own.
  */
 export function Hero({ introDelay }: { introDelay: number }) {
