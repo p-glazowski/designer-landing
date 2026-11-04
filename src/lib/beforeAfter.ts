@@ -5,13 +5,13 @@ import { drawCover, seeded, type Pt } from './smear'
 // only inside, and closes up again behind it.
 
 const FOLLOW_MS = 70
-const CLOSE_MS = 420
-const CLEAR_AFTER_MS = 1500
+const CLOSE_MS = 700
+const CLEAR_AFTER_MS = 2500
 /** Fading in larger, rarer steps keeps the faint values it stalls at as low as possible. */
 const FADE_EVERY_MS = 50
 /** How long a mask layer takes new dabs before the older one, faded out by then, is wiped and takes over. */
-const SWAP_EVERY_MS = 1800
-const MAX_STROKES = 3
+const SWAP_EVERY_MS = 3000
+const MAX_STROKES = 4
 
 /** A smudge dragged by itself, in 0–1 coordinates of the picture. */
 type Stroke = { start: number; ms: number; from: Pt; to: Pt; bend: number; scale: number; last: Pt | null; angle: number }
@@ -150,12 +150,12 @@ export class BeforeAfterSmear {
   private spawn(now: number) {
     const mid = this.nextCell()
     const dir = Math.random() * Math.PI * 2
-    const reach = (0.14 + Math.random() * 0.14) * Math.min(this.w, this.h)
+    const reach = (0.32 + Math.random() * 0.28) * Math.min(this.w, this.h)
     const dx = (Math.cos(dir) * reach) / this.w
     const dy = (Math.sin(dir) * reach) / this.h
     this.strokes.push({
       start: now,
-      ms: 1800 + Math.random() * 1200,
+      ms: 1000 + Math.random() * 600,
       from: { x: mid.x - dx, y: mid.y - dy },
       to: { x: mid.x + dx, y: mid.y + dy },
       bend: (Math.random() - 0.5) * 0.5,
@@ -182,7 +182,7 @@ export class BeforeAfterSmear {
     if (held) this.nextStroke = now + 900
     else if (this.ambient && now >= this.nextStroke && this.strokes.length < MAX_STROKES) {
       this.spawn(now)
-      this.nextStroke = now + 800 + Math.random() * 700
+      this.nextStroke = now + 500 + Math.random() * 500
     }
     this.strokes = this.strokes.filter((s) => {
       const k = Math.min((now - s.start) / s.ms, 1)
@@ -203,7 +203,7 @@ export class BeforeAfterSmear {
 
   private stamp(from: Pt, to: Pt, angle: number, scale = 1) {
     const d = Math.hypot(to.x - from.x, to.y - from.y)
-    const size = Math.max(Math.min(this.w, this.h) * 0.56, 240) * scale
+    const size = Math.max(Math.min(this.w, this.h) * 0.3, 150) * scale
     const n = Math.max(1, Math.ceil(d / 8))
     const x = this.layers[this.active].x
     for (let i = 1; i <= n; i++) {
