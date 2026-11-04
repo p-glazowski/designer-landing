@@ -87,9 +87,12 @@ export function Contact() {
               <label htmlFor="contact-message">Wiadomość</label>
               <textarea id="contact-message" name="message" rows={3} placeholder=" " data-lenis-prevent />
             </div>
-            <button type="submit" className="button contact-button" data-part>
-              Wyślij wiadomość
-            </button>
+            {/* The reveal sits on a wrapper: on the button it fights .button's transform transition and leaves it 28px low. */}
+            <div className="contact-field-wide" data-part>
+              <button type="submit" className="button contact-button">
+                Wyślij wiadomość
+              </button>
+            </div>
           </form>
         </div>
       </section>

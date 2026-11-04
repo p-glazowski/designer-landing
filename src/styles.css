@@ -22,6 +22,8 @@
   --step-head: clamp(2.5rem, 1.2rem + 3.6vw, 4.5rem);
   --step-giant: clamp(4.5rem, 1rem + 12vw, 13.5rem);
 
+  /* 1% of the screen height. src/lib/viewportLock.ts pins it where browsers resize the page. */
+  --svh: 1svh;
   --m: clamp(16px, 2.2vw, 32px);
   --gap: clamp(120px, 14vw, 200px);
   --ease: cubic-bezier(0.7, 0, 0.2, 1);
@@ -153,11 +155,11 @@ button {
 
 .hero {
   position: relative;
-  min-height: 100svh;
+  min-height: calc(var(--svh) * 100);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 0 var(--m) clamp(28px, 5svh, 48px);
+  padding: 0 var(--m) clamp(28px, calc(var(--svh) * 5), 48px);
   overflow: hidden;
   isolation: isolate;
 }
@@ -321,7 +323,7 @@ html:has(.nav-menu[open]) {
   height: 100dvh;
   max-height: none;
   margin: 0;
-  padding: clamp(12px, 1.4vw, 18px) var(--m) clamp(28px, 5svh, 48px);
+  padding: clamp(12px, 1.4vw, 18px) var(--m) clamp(28px, calc(var(--svh) * 5), 48px);
   border: 0;
   background: var(--bg);
   color: var(--ink);
@@ -489,7 +491,7 @@ html:has(.nav-menu[open]) {
 .work-frame {
   grid-column: 9 / 13;
   position: sticky;
-  top: 15vh;
+  top: calc(var(--svh) * 15);
   align-self: start;
   margin-top: 120px;
   aspect-ratio: 4 / 5;
@@ -514,7 +516,7 @@ html:has(.nav-menu[open]) {
 /* ---------- Statement ---------- */
 
 .statement-stage {
-  height: 240svh;
+  height: calc(var(--svh) * 240);
 }
 
 .statement-room {
@@ -522,14 +524,14 @@ html:has(.nav-menu[open]) {
   top: 0;
   display: flex;
   align-items: center;
-  height: 100svh;
+  height: calc(var(--svh) * 100);
   padding: 0 var(--m);
   overflow: hidden;
 }
 
 .statement-text {
   width: 100%;
-  font-size: min(7.7vw, 17svh);
+  font-size: min(7.7vw, calc(var(--svh) * 17));
   font-weight: 500;
   line-height: 1.02;
   letter-spacing: -0.045em;
@@ -601,7 +603,7 @@ html:has(.nav-menu[open]) {
 
 .panel {
   position: relative;
-  height: 100svh;
+  height: calc(var(--svh) * 100);
   overflow: hidden;
 }
 
@@ -704,7 +706,7 @@ html:has(.nav-menu[open]) {
 
 .change-stage {
   position: relative;
-  height: 100svh;
+  height: calc(var(--svh) * 100);
   overflow: hidden;
   background: var(--surface);
 }
@@ -738,13 +740,13 @@ html:has(.nav-menu[open]) {
 /* ---------- Studio ---------- */
 
 .studio-stage {
-  height: 260svh;
+  height: calc(var(--svh) * 260);
 }
 
 .studio-room {
   position: sticky;
   top: 0;
-  height: 100svh;
+  height: calc(var(--svh) * 100);
   overflow: hidden;
   background: var(--bg);
 }
@@ -837,7 +839,7 @@ html:has(.nav-menu[open]) {
   grid-column: 7 / 13;
   display: flex;
   gap: 12px;
-  height: clamp(420px, 72svh, 720px);
+  height: clamp(420px, calc(var(--svh) * 72), 720px);
 }
 
 .studio-crafts li {
@@ -886,9 +888,11 @@ html:has(.nav-menu[open]) {
 
 .contact {
   position: relative;
-  height: 100svh;
+  height: calc(var(--svh) * 100);
   min-height: 800px;
   overflow: hidden;
+  /* On a screen shorter than the section, links land lower so the send button shows, while the heading clears the nav. */
+  scroll-margin-top: clamp(-56px, calc(var(--svh) * 100 - 800px), 0px);
 }
 
 .contact-photo {
@@ -1039,11 +1043,13 @@ html:has(.nav-menu[open]) {
     height: auto;
     min-height: 0;
     overflow: visible;
+    /* Links land past the photo, on the words and the form, with the heading clear of the nav. */
+    scroll-margin-top: calc(var(--svh) * -70 - 48px + 80px);
   }
 
   .contact-photo {
     position: relative;
-    height: 70svh;
+    height: calc(var(--svh) * 70);
   }
 
   .contact-panel {
@@ -1079,7 +1085,7 @@ html:has(.nav-menu[open]) {
 /* ---------- All projects ---------- */
 
 .projects {
-  padding: clamp(112px, 16svh, 176px) var(--m) 0;
+  padding: clamp(112px, calc(var(--svh) * 16), 176px) var(--m) 0;
 }
 
 .projects-head {
@@ -1248,11 +1254,11 @@ html:has(.nav-menu[open]) {
 
 .case-hero {
   position: relative;
-  min-height: 100svh;
+  min-height: calc(var(--svh) * 100);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 0 var(--m) clamp(28px, 5svh, 48px);
+  padding: 0 var(--m) clamp(28px, calc(var(--svh) * 5), 48px);
   overflow: hidden;
   isolation: isolate;
 }
@@ -1612,7 +1618,7 @@ html:has(.lightbox[open]) {
 /* ---------- Missing page ---------- */
 
 .missing {
-  min-height: 70svh;
+  min-height: calc(var(--svh) * 70);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -1951,7 +1957,7 @@ html:has(.lightbox[open]) {
   }
 
   .statement-stage {
-    height: 200svh;
+    height: calc(var(--svh) * 200);
   }
 
   .statement-text {
@@ -2004,11 +2010,11 @@ html:has(.lightbox[open]) {
   }
 
   .change-stage {
-    height: 76svh;
+    height: calc(var(--svh) * 76);
   }
 
   .studio-stage {
-    height: 220svh;
+    height: calc(var(--svh) * 220);
   }
 
   .studio-line {

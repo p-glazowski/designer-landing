@@ -10,7 +10,8 @@ let lenis: Lenis | null = null
 export function scrollToHash(hash: string) {
   const el = document.querySelector<HTMLElement>(hash)
   if (!el) return
-  if (lenis) lenis.scrollTo(el, { offset: 0, duration: 1.4 })
+  // Lenis ignores scroll-margin, which the browser's own scrolling below does honour.
+  if (lenis) lenis.scrollTo(el, { offset: -parseFloat(getComputedStyle(el).scrollMarginTop), duration: 1.4 })
   else el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
   el.focus({ preventScroll: true })
 }
