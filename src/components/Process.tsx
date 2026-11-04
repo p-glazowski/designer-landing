@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { steps } from '../content'
 import { prefersReducedMotion } from '../lib/smear'
+import { withBase } from '../lib/withBase'
 
 /** Four full-screen panels; each stage's word holds the centre while its film plays. */
 export function Process() {
@@ -41,8 +42,8 @@ export function Process() {
           <div className="panel-media">
             <video
               data-zoom
-              src={`/media/${s.media.src}.mp4`}
-              poster={`/media/${s.media.src}-poster.jpg`}
+              src={withBase(`/media/${s.media.src}.mp4`)}
+              poster={withBase(`/media/${s.media.src}-poster.jpg`)}
               muted
               loop
               playsInline

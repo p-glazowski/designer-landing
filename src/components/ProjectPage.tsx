@@ -3,6 +3,7 @@ import { categories, projects, type Project } from '../data'
 import { stopScroll } from '../lib/motion'
 import { prefersReducedMotion } from '../lib/smear'
 import { Contact } from './Contact'
+import { withBase } from '../lib/withBase'
 
 /** The whole photo, large, stepped through from the keyboard or the buttons. Each one wipes in like the rest of the site's pictures. */
 function Lightbox({ photos, at, onMove, onClose }: { photos: Project['gallery']; at: number; onMove: (to: number) => void; onClose: () => void }) {
@@ -89,7 +90,7 @@ export function ProjectPage({ project: p }: { project: Project }) {
             <p className="case-hero-side" data-part>
               {p.kind}, {p.city}, {p.year}
               <br />
-              <a className="stroke-link" href="/realizacje">
+              <a className="stroke-link" href={withBase('/realizacje')}>
                 Wszystkie realizacje
               </a>
             </p>
@@ -197,7 +198,7 @@ export function ProjectPage({ project: p }: { project: Project }) {
       </article>
 
       <nav className="case-next" aria-label="Następna realizacja">
-        <a href={`/realizacje/${next.slug}`} data-reveal>
+        <a href={withBase(`/realizacje/${next.slug}`)} data-reveal>
           <span className="case-next-text" data-part>
             <span className="case-next-label">Następna realizacja</span>
             <span className="case-next-name">{next.name}</span>

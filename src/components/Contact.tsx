@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { brand, contact, credits } from '../content'
+import { withBase } from '../lib/withBase'
 
 /** Where a word's visible ink really sits, as shares of the font size: the blank before it and the drop below the baseline. */
 function measureInk(word: string, style: CSSStyleDeclaration) {
@@ -57,7 +58,7 @@ export function Contact() {
     <>
       <section className="contact" id="kontakt" aria-labelledby="contact-title" tabIndex={-1}>
         <div className="contact-photo">
-          <img data-zoom src="/media/contact.jpg" alt="Okrągły kinkiet rzucający ciepłe światło na ciemną, fakturowaną ścianę" width={2000} height={3000} loading="lazy" decoding="async" />
+          <img data-zoom src={withBase('/media/contact.jpg')} alt="Okrągły kinkiet rzucający ciepłe światło na ciemną, fakturowaną ścianę" width={2000} height={3000} loading="lazy" decoding="async" />
         </div>
         <div className="contact-panel" data-reveal>
           <div>
@@ -97,9 +98,9 @@ export function Contact() {
         <div className="footer-details" data-part>
           <p>Projektowanie wnętrz</p>
           <p className="footer-links">
-            <a href="/realizacje">Realizacje</a>
-            <a href="/#proces">Proces</a>
-            <a href="/#przed-i-po">Przed i po</a>
+            <a href={withBase('/realizacje')}>Realizacje</a>
+            <a href={withBase('/#proces')}>Proces</a>
+            <a href={withBase('/#przed-i-po')}>Przed i po</a>
             <a href="#kontakt">Kontakt</a>
           </p>
           <p>© 2026 {brand}</p>

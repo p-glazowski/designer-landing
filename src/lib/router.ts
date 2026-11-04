@@ -12,8 +12,11 @@ export type Route = {
   y: number
 }
 
+/** Where the site sits on its host, which the routes in the app don't include. */
+const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+
 const read = (arrival: Arrival): Route => ({
-  path: location.pathname.replace(/(.)\/$/, '$1'),
+  path: (location.pathname.slice(base.length) || '/').replace(/(.)\/$/, '$1'),
   hash: location.hash,
   arrival,
   y: arrival === 'pop' ? (history.state?.y ?? 0) : 0,

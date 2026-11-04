@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { projects, type Project } from '../data'
 import { prefersReducedMotion } from '../lib/smear'
+import { withBase } from '../lib/withBase'
 
 const featured = projects.filter((p) => p.featured)
 const privateWork = featured.filter((p) => p.category === 'private')
@@ -13,7 +14,7 @@ function Row({ p, active, onActive }: { p: Project; active: boolean; onActive: (
   return (
     <li className={`work-row${active ? ' is-active' : ''}`}>
       <img className="work-thumb" src={p.cover.src} alt={p.cover.alt} width={p.cover.w} height={p.cover.h} style={{ objectPosition: p.cover.focus }} loading="lazy" decoding="async" />
-      <a href={`/realizacje/${p.slug}`} onPointerEnter={onActive} onFocus={onActive} aria-describedby={`meta-${p.slug}`}>
+      <a href={withBase(`/realizacje/${p.slug}`)} onPointerEnter={onActive} onFocus={onActive} aria-describedby={`meta-${p.slug}`}>
         <span className="work-name">{p.name}</span>
         <span className="work-meta" id={`meta-${p.slug}`}>
           {p.kind}<br />
@@ -113,7 +114,7 @@ export function Work() {
           ))}
         </ul>
         <p className="work-all" data-part>
-          <a className="stroke-link" href="/realizacje">
+          <a className="stroke-link" href={withBase('/realizacje')}>
             Zobacz wszystkie realizacje
           </a>
         </p>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { HeroSmear } from '../lib/heroSmear'
 import { prefersReducedMotion } from '../lib/smear'
+import { withBase } from '../lib/withBase'
 
 const rooms = [
   {
@@ -66,7 +67,7 @@ export function Hero({ introDelay }: { introDelay: number }) {
     for (const room of rooms) {
       for (const { src } of room.photos) {
         const img = new Image()
-        img.src = `/media/${src}.jpg`
+        img.src = withBase(`/media/${src}.jpg`)
         img.decode().then(
           () => ready.current.add(src),
           () => {},
@@ -133,7 +134,7 @@ export function Hero({ introDelay }: { introDelay: number }) {
               key={l.id}
               className={l.id === 0 ? 'is-base' : ''}
               decoding="sync"
-              src={`/media/${photo.src}.jpg`}
+              src={withBase(`/media/${photo.src}.jpg`)}
               alt={i === layers.length - 1 ? photo.alt : ''}
               style={{ objectPosition: photo.focus }}
               fetchPriority={l.id === 0 ? 'high' : 'auto'}

@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { prefersReducedMotion } from '../lib/smear'
+import { withBase } from '../lib/withBase'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -53,10 +54,10 @@ export function Statement() {
 
       <div className="statement-after">
         <figure className="statement-stair" data-reveal>
-          <img data-part src="/media/stair.jpg" alt="Kręte schody w mroku, światło wpada przez wąskie szczeliny w ścianie" width={1000} height={667} loading="lazy" decoding="async" />
+          <img data-part src={withBase('/media/stair.jpg')} alt="Kręte schody w mroku, światło wpada przez wąskie szczeliny w ścianie" width={1000} height={667} loading="lazy" decoding="async" />
         </figure>
         <figure className="statement-columns" data-reveal>
-          <img data-part src="/media/columns.jpg" alt="Kamienne kolumny i ostre smugi cienia między nimi" width={1000} height={750} loading="lazy" decoding="async" />
+          <img data-part src={withBase('/media/columns.jpg')} alt="Kamienne kolumny i ostre smugi cienia między nimi" width={1000} height={750} loading="lazy" decoding="async" />
         </figure>
         <p className="statement-note" data-reveal>
           <span data-part>
