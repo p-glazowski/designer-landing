@@ -48,17 +48,6 @@ export const steps = [
   },
 ]
 
-export type Material = { id: string; name: string; note: string; w: number; h: number; alt: string }
-
-export const materials: Material[] = [
-  { id: 'travertine', name: 'trawertyn', note: 'ciepły, porowaty, matowy', w: 700, h: 1050, alt: 'Ściana z trawertynu w łazience' },
-  { id: 'walnut', name: 'orzech', note: 'lamele w ciemnym oleju', w: 700, h: 467, alt: 'Ciemne orzechowe lamele' },
-  { id: 'marble', name: 'marmur', note: 'czarny z białą żyłą', w: 700, h: 1050, alt: 'Czarny marmur z jasnym użyleniem i złotą listwą' },
-  { id: 'glass', name: 'luksfery', note: 'światło przez szkło', w: 700, h: 1050, alt: 'Ściana z luksferów podświetlona bursztynowo' },
-  { id: 'chrome', name: 'chrom', note: 'giętki połysk', w: 700, h: 394, alt: 'Wygięty chromowany kształt na czarnym tle' },
-  { id: 'velvet', name: 'aksamit bordo', note: 'ciężka, miękka fałda', w: 700, h: 526, alt: 'Bordowa aksamitna zasłona w fałdach' },
-]
-
 export const credits = [
   ['Peter Muniz', 'Unsplash'],
   ['Aalo Lens', 'Unsplash'],
