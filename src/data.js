@@ -68,7 +68,7 @@ const media = {
   cup: { src: withBase('/media/talk-poster.jpg'), w: 1280, h: 720, alt: 'Ciemny kubek kawy na stole przy oknie' },
   samples: { src: withBase('/media/studio.jpg'), w: 600, h: 436, alt: 'Próbki materiałów rozłożone na stole w pracowni' },
   drawing: { src: withBase('/media/step-sketch.jpg'), w: 2000, h: 1125, alt: 'Projektant rysujący plan na rozłożonym arkuszu' },
-  sketch: { src: withBase('/media/sketch-poster.jpg'), w: 1280, h: 675, alt: 'Dłoń kreśląca ostre, ciemne linie na papierze' },
+  sketch: { src: withBase('/media/sketch-poster.jpg'), w: 1280, h: 674, alt: 'Dłoń kreśląca ostre, ciemne linie na papierze' },
   restaurant: { src: withBase('/media/work-restaurant.jpg'), w: 1400, h: 2100, alt: 'Restauracja z plecioną lampą nad okrągłym stołem i ryflowaną ścianą' },
   columns: { src: withBase('/media/columns.jpg'), w: 1000, h: 750, alt: 'Kamienne kolumny i ostre smugi cienia między nimi' },
   lobby: { src: withBase('/media/hero-commercial.jpg'), w: 2400, h: 1500, alt: 'Lobby z trawertynowymi ścianami, sufitem z drewnianych lameli i recepcją z ciemnego marmuru' },

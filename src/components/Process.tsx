@@ -31,8 +31,43 @@ export function Process() {
       },
       { threshold: Array.from({ length: 21 }, (_, i) => i / 20) },
     )
-    root.current!.querySelectorAll('.panel').forEach((p) => io.observe(p))
-    return () => io.disconnect()
+    // Downloading starts a screen ahead, so a film is ready by the time its panel arrives.
+    const ahead = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return
+          ahead.unobserve(e.target)
+          const v = e.target.querySelector('video')!
+          v.preload = 'auto'
+          // Arriving by a jump, it is already playing, and load() would cancel that.
+          if (v.paused) v.load()
+        })
+      },
+      { rootMargin: '100% 0px' },
+    )
+
+    // The poster is the film's first frame, and only lifts once that frame is on screen.
+    const panels = root.current!.querySelectorAll<HTMLElement>('.panel')
+    const stops = [...panels].map((panel) => {
+      const v = panel.querySelector('video')!
+      const reveal = () => panel.classList.add('is-rolling')
+      if (v.requestVideoFrameCallback) {
+        const frame = v.requestVideoFrameCallback(reveal)
+        return () => v.cancelVideoFrameCallback(frame)
+      }
+      v.addEventListener('playing', reveal, { once: true })
+      return () => v.removeEventListener('playing', reveal)
+    })
+
+    panels.forEach((p) => {
+      io.observe(p)
+      ahead.observe(p)
+    })
+    return () => {
+      io.disconnect()
+      ahead.disconnect()
+      stops.forEach((stop) => stop())
+    }
   }, [])
 
   return (
@@ -43,13 +78,13 @@ export function Process() {
             <video
               data-zoom
               src={withBase(`/media/${s.media.src}.mp4`)}
-              poster={withBase(`/media/${s.media.src}-poster.jpg`)}
               muted
               loop
               playsInline
               preload="none"
               aria-label={s.media.alt}
             />
+            <img className="panel-poster" data-zoom src={withBase(`/media/${s.media.src}-poster.jpg`)} alt="" decoding="async" />
           </div>
           <div className="panel-word">
             <h2>{s.word}</h2>

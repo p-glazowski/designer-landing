@@ -619,6 +619,16 @@ html:has(.nav-menu[open]) {
   filter: brightness(0.78) saturate(0.85);
 }
 
+.panel-poster {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.5s ease;
+}
+
+.panel.is-rolling .panel-poster {
+  opacity: 0;
+}
+
 .panel-word {
   position: absolute;
   inset: 0;
@@ -1981,7 +1991,8 @@ html:has(.lightbox[open]) {
   }
 
   /* The tall crop has to keep the mug and its steam in frame. */
-  .panel:first-child video {
+  .panel:first-child video,
+  .panel:first-child .panel-poster {
     object-position: 74% 50%;
   }
 
