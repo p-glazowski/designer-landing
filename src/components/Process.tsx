@@ -6,20 +6,31 @@ import { prefersReducedMotion } from '../lib/smear'
 export function Process() {
   const root = useRef<HTMLElement>(null)
 
-  // Play each clip only while its panel is on screen.
+  // Only the panel filling most of the screen plays: two full-screen clips
+  // decoding at once made scrolling between panels stutter.
   useEffect(() => {
-    const videos = root.current!.querySelectorAll('video')
     if (prefersReducedMotion()) return
+    const seen = new Map<Element, number>()
     const io = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          const v = e.target as HTMLVideoElement
-          if (e.isIntersecting) v.play().catch(() => {})
-          else v.pause()
-        }),
-      { threshold: 0.15 },
+      (entries) => {
+        entries.forEach((e) => seen.set(e.target, e.isIntersecting ? e.intersectionRatio : 0))
+        let main: Element | null = null
+        let most = 0
+        seen.forEach((ratio, panel) => {
+          if (ratio > most) {
+            most = ratio
+            main = panel
+          }
+        })
+        seen.forEach((_, panel) => {
+          const v = panel.querySelector('video')!
+          if (panel !== main) v.pause()
+          else if (v.paused) v.play().catch(() => {})
+        })
+      },
+      { threshold: Array.from({ length: 21 }, (_, i) => i / 20) },
     )
-    videos.forEach((v) => io.observe(v))
+    root.current!.querySelectorAll('.panel').forEach((p) => io.observe(p))
     return () => io.disconnect()
   }, [])
 
